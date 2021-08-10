@@ -12,11 +12,13 @@ class ScreenRecorder:
         self.codec = cv2.VideoWriter_fourcc(*"XVID")
         self.writer = cv2.VideoWriter("./temp/output.avi", self.codec, self.fps, self.screen_size)
 
-        self.recording_thread = threading.Thread(target=self.start_recording)
+        self.recording_thread = threading.Thread(target=self.record)
+
+    def start_recording(self):
         self.recording_thread.start()
         print("started")
 
-    def start_recording(self):
+    def record(self):
         last_time = time.time()
         curr_thread = threading.currentThread()
         while getattr(curr_thread, "recording", True):
@@ -27,8 +29,8 @@ class ScreenRecorder:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 self.writer.write(frame)
 
-        # make sure everything is closed when exited
         self.writer.release()
+        print("ended")
 
     def stop_recording(self):
         self.recording_thread.recording = False

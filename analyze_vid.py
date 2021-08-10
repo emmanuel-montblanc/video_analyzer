@@ -8,6 +8,8 @@ from PyQt5.QtCore import Qt, QPoint, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence
 from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QMessageBox
 
+from screen_recorder import ScreenRecorder
+
 
 class AnalyzeVidWindow(QMainWindow):
 
@@ -18,17 +20,19 @@ class AnalyzeVidWindow(QMainWindow):
         self.master_window = master_window
 
         self.video_name = video_name
-        with open("./" + video_name + "/info.txt") as file:
+        with open("./videos/" + video_name + "/info.txt") as file:
             self.nb_frames = int(file.readline().strip())
             self.fps = int(file.readline().strip())
 
         self.current_frame = 0
-        self.pixmap = QPixmap(self.video_name + "/frame0.jpg")
+        self.pixmap = QPixmap("./videos/" + self.video_name + "/frame0.jpg")
         if self.pixmap.width() >= 1920:
             self.pixmap = self.pixmap.scaledToWidth(1280)
         if self.pixmap.height() >= 1080:
             self.pixmap = self.pixmap.scaledToHeight(720)
         self.resize(self.pixmap.width() + 100, self.pixmap.height() + 50)
+
+        self.screen_recorder = ScreenRecorder()
 
         self.now = datetime.now()
 
@@ -115,9 +119,9 @@ class AnalyzeVidWindow(QMainWindow):
 
         # Record button
         self.button_record = QPushButton(self)
-        self.button_record.setText("record")
+        self.button_record.setText("start recording")
         self.button_record.setGeometry(self.frameGeometry().width() - 85, 450, 80, 40)
-        self.button_record.clicked.connect(self.start_record_video)
+        self.button_record.clicked.connect(self.record_video)
 
         # change video button
         self.button_change_vid = QPushButton(self)
@@ -206,7 +210,7 @@ class AnalyzeVidWindow(QMainWindow):
             self.current_frame = 0
 
     def load_current_frame(self):
-        self.pixmap = QPixmap(self.video_name + "/frame" + str(self.current_frame) + ".jpg")
+        self.pixmap = QPixmap("./videos/" + self.video_name + "/frame" + str(self.current_frame) + ".jpg")
         self.pixmap = self.pixmap.scaledToWidth(my_round(self.frameGeometry().width() - 90))
 
     def remove_last_line(self):
@@ -240,18 +244,12 @@ class AnalyzeVidWindow(QMainWindow):
             self.load_current_frame()
             self.update()
 
-    def start_record_video(self):
-        if self.button_record.text() == "record":
-            press_win_alt_r()
+    def record_video(self):
+        if self.button_record.text() == "start recording":
+            self.screen_recorder.start_recording()
             self.button_record.setText("stop recording")
-            self.now = datetime.now()
-
         else:
-            press_win_alt_r()
-            self.button_record.setText("record")
-
-            time.sleep(3)
-            move_recording(self.now)
+            self.screen_recorder.stop_recording()
 
     def change_video(self):
         self.master_window.show()
@@ -261,38 +259,3 @@ class AnalyzeVidWindow(QMainWindow):
 def my_round(x, base=5):
     return base * round(x/base)
 
-
-def press_win_alt_r():
-    """
-    press the keys windows + Alt + r
-    Shortcut for recording via the xbox game bar
-    :return: None
-    """
-
-    # Holds down the alt and windows key
-    pyautogui.keyDown("winleft")
-    pyautogui.keyDown("alt")
-
-    # Press r key
-    pyautogui.press("r")
-
-    # Lets go of the alt and windows keys
-    pyautogui.keyUp("winleft")
-    pyautogui.keyUp("alt")
-
-
-def move_recording(now):
-    for sec in range(now.second, now.second + 5):
-        try:
-            filename = "python " + now.strftime("%Y-%m-%d %H-%M-") + str(sec) + ".mp4"
-            file_path = Path("E:") / "video" / "Captures" / filename
-            new_path = Path.cwd() / "Records" / filename
-            shutil.move(file_path, new_path)
-
-            msg_box = QMessageBox()
-            msg_box.setWindowTitle("Successfully recorded")
-            msg_box.setText("Your record was saved to :" + str(new_path))
-            msg_box.exec()
-            break
-        except FileNotFoundError:
-            pass

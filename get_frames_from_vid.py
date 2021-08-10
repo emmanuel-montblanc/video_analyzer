@@ -6,7 +6,7 @@ import cv2
 def get_frames(video_path: Path):
 
     vid_name = video_path.stem
-    working_folder = Path().cwd() / vid_name
+    working_folder = Path().cwd() / "videos" / vid_name
     already_loaded = check_if_loaded(working_folder)
 
     if not already_loaded:
@@ -22,7 +22,7 @@ def get_frames(video_path: Path):
                 if (frame_count % 10) == 0:
                     print("creating frame nb " + str(frame_count))
 
-                name = './' + vid_name + '/frame' + str(frame_count) + '.jpg'
+                name = './videos/' + vid_name + '/frame' + str(frame_count) + '.jpg'
                 cv2.imwrite(name, frame)
 
                 frame_count += 1
