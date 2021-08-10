@@ -10,7 +10,7 @@ class ScreenRecorder:
         self.screen_size = pyautogui.size()
         self.fps = 15
         self.codec = cv2.VideoWriter_fourcc(*"XVID")
-        self.writer = cv2.VideoWriter("./temp/output.avi", self.codec, self.fps, self.screen_size)
+        self.writer = cv2.VideoWriter("./temp/screen.avi", self.codec, self.fps, self.screen_size)
 
         self.recording_thread = threading.Thread(target=self.record)
 
