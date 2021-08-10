@@ -40,7 +40,9 @@ def download_from_instagram(url):
     video_url = get_video_url(response)
     # print(video_url)
     post_name = url.split('/p/')[-1].rstrip('/')
-    download_video(video_url, "insta_videos/insta_video_" + post_name + ".mp4")
+    file_name = "insta_video_" + post_name + ".mp4"
+    download_video(video_url,  "insta_videos/" + file_name)
+    return file_name
 
 
 if __name__ == '__main__':

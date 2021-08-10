@@ -43,7 +43,7 @@ def clear_dir(directory):
 
 
 def create_info_file(frame_count, fps, vid_name):
-    info_file = './' + vid_name + '/info.txt'
+    info_file = './videos/' + vid_name + '/info.txt'
     with open(info_file, 'x') as file:
         file.writelines([str(frame_count), '\n' + str(fps)])
 
