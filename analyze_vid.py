@@ -1,14 +1,14 @@
 import shutil
 import time
 from datetime import datetime
-from pathlib import Path
 
-import pyautogui
 from PyQt5.QtCore import Qt, QPoint, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence
 from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QMessageBox
 
 from screen_recorder import ScreenRecorder
+from audi_recorder import AudioRecorder
+from merge_audio_screen import merge
 
 
 class AnalyzeVidWindow(QMainWindow):
@@ -33,6 +33,7 @@ class AnalyzeVidWindow(QMainWindow):
         self.resize(self.pixmap.width() + 100, self.pixmap.height() + 50)
 
         self.screen_recorder = ScreenRecorder()
+        self.audio_recorder = AudioRecorder()
 
         self.now = datetime.now()
 
@@ -247,9 +248,12 @@ class AnalyzeVidWindow(QMainWindow):
     def record_video(self):
         if self.button_record.text() == "start recording":
             self.screen_recorder.start_recording()
+            self.audio_recorder.start_recording()
             self.button_record.setText("stop recording")
         else:
             self.screen_recorder.stop_recording()
+            self.audio_recorder.stop_recording()
+            merge(self.video_name)
 
     def change_video(self):
         self.master_window.show()
