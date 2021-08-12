@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 from pathlib import Path
 
 
-def download_video(video_url, video_path):
+def _download_video(video_url, video_path):
     r = requests.get(video_url, stream=True)
     with open(video_path, 'wb') as f:
         for chunk in r.iter_content(1024):
@@ -15,14 +15,14 @@ def download_video(video_url, video_path):
                 f.flush()
 
 
-def get_response(url):
+def _get_response(url):
     response = requests.get(url, headers={'User-agent': 'idk_just_let_me_dl_this'})
     while response.status_code != 200:
         response = requests.get(url)
     return response
 
 
-def get_video_url(response):
+def _get_video_url(response):
     soup = BeautifulSoup(response.text, "html.parser")
     script_with_url = soup.find('script', text=re.compile('window\._sharedData'))
     list_attributes = script_with_url.string.split(',')
@@ -36,21 +36,21 @@ def get_video_url(response):
             return video_url
 
 
-def create_folder():
+def _create_insta_videos_folder():
     insta_videos_folder = Path.cwd() / "insta_videos"
     insta_videos_folder.mkdir(parents=True, exist_ok=True)
 
 
 def download_from_instagram(url):
-    response = get_response(url)
-    video_url = get_video_url(response)
+    response = _get_response(url)
+    video_url = _get_video_url(response)
 
     post_name = url.split('/p/')[-1].rstrip('/')
     file_name = "insta_video_" + post_name + ".mp4"
     video_path = Path.cwd() / "insta_videos" / file_name
 
-    create_folder()
-    download_video(video_url, video_path)
+    _create_insta_videos_folder()
+    _download_video(video_url, video_path)
 
     return video_path
 
