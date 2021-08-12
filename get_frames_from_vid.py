@@ -1,3 +1,7 @@
+"""
+This modules allows you to extract the frames from a video, and store them in a folder as jpeg images
+"""
+
 import os
 from pathlib import Path
 import cv2
