@@ -5,6 +5,8 @@ import cv2
 
 def get_frames(video_path: Path):
 
+    create_video_folder()
+
     vid_name = video_path.stem
     working_folder = Path().cwd() / "videos" / vid_name
     already_loaded = check_if_loaded(working_folder)
@@ -35,6 +37,11 @@ def get_frames(video_path: Path):
         fps = round(vid.get(cv2.CAP_PROP_FPS))
         create_info_file(frame_count, fps, vid_name)
         vid.release()
+
+
+def create_video_folder():
+    video_folder = Path.cwd() / "videos"
+    video_folder.mkdir(parents=True, exist_ok=True)
 
 
 def clear_dir(directory):
