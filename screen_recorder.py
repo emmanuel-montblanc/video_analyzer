@@ -12,13 +12,13 @@ class ScreenRecorder:
         self.codec = cv2.VideoWriter_fourcc(*"XVID")
         self.writer = cv2.VideoWriter("./temp/screen.avi", self.codec, self.fps, self.screen_size)
 
-        self.recording_thread = threading.Thread(target=self.record)
+        self.recording_thread = threading.Thread(target=self._record)
 
     def start_recording(self):
         self.recording_thread.start()
         print("started")
 
-    def record(self):
+    def _record(self):
         last_time = time.time()
         curr_thread = threading.currentThread()
         while getattr(curr_thread, "recording", True):

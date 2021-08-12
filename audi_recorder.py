@@ -21,9 +21,9 @@ class AudioRecorder:
                                       frames_per_buffer=self.frames_per_buffer)
         self.audio_frames = []
 
-        self.recording_thread = threading.Thread(target=self.record)
+        self.recording_thread = threading.Thread(target=self._record)
 
-    def record(self):
+    def _record(self):
         curr_thread = threading.currentThread()
 
         self.stream.start_stream()
