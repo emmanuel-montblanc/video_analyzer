@@ -9,17 +9,25 @@ def merge(video_name):
     while threading.active_count() > 1:
         time.sleep(1)
 
-    output_name = _get_output_name(video_name)
+    _create_records_folder()
+    output_path = _get_output_path(video_name)
 
-    cmd = "ffmpeg -i ./temp/screen.avi -i ./temp/audio.wav -shortest -c copy " + output_name
+    cmd = "ffmpeg -i ./temp/screen.avi -i ./temp/audio.wav -shortest -c copy " + str(output_path)
     subprocess.call(cmd, shell=True)
 
 
-def _get_output_name(video_name):
+def _create_records_folder():
+    records_folder = Path.cwd() / "insta_videos"
+    records_folder.mkdir(parents=True, exist_ok=True)
+
+
+def _get_output_path(video_name):
+    record_folder = Path.cwd() / "records"
     output_name = video_name + ".mkv"
     i = 0
-    while Path(output_name).exists():
+    while (record_folder / output_name).exists():
         i += 1
         output_name = video_name + "_" + str(i) + ".mkv"
 
-    return output_name
+    output_path = record_folder / output_name
+    return output_path
