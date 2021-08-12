@@ -256,6 +256,10 @@ class AnalyzeVidWindow(QMainWindow):
             merge(self.video_name)
 
     def change_video(self):
+        # Stop the recording before leaving
+        if self.button_record.text() == "stop recording":
+            self.record_video()
+
         self.master_window.show()
         self.close()
 
