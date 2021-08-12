@@ -1,12 +1,11 @@
-import shutil
-import time
 from datetime import datetime
 
 from PyQt5.QtCore import Qt, QPoint, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence
-from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel
 
 from recorder import Recorder
+
 
 # TODO: organiser tout le bordel
 # TODO: fonction pour zoomer sur l'image
@@ -18,6 +17,7 @@ class AnalyzeVidWindow(QMainWindow):
     def __init__(self, master_window, video_name):
         super().__init__()
         self.resize(1380, 770)
+        self.setWindowTitle(video_name)
 
         self.master_window = master_window
 
@@ -104,16 +104,10 @@ class AnalyzeVidWindow(QMainWindow):
         self.speed_x0125.clicked.connect(lambda: self.set_speed(0.125))
 
         # Play button
-        self.button_play = QPushButton(self)
-        self.button_play.setText("Play")
-        self.button_play.setGeometry(self.frameGeometry().width() - 85, 380, 40, 40)
-        self.button_play.clicked.connect(self.play_vid)
-
-        # Pause button
-        self.button_pause = QPushButton(self)
-        self.button_pause.setText("Pause")
-        self.button_pause.setGeometry(self.frameGeometry().width() - 42, 380, 40, 40)
-        self.button_pause.clicked.connect(self.pause_vid)
+        self.button_play_pause = QPushButton(self)
+        self.button_play_pause.setText("Play")
+        self.button_play_pause.setGeometry(self.frameGeometry().width() - 85, 380, 80, 40)
+        self.button_play_pause.clicked.connect(self.play_pause_vid)
 
         # Record button
         self.button_record = QPushButton(self)
@@ -129,7 +123,7 @@ class AnalyzeVidWindow(QMainWindow):
 
         # Play pause shortcut
         self.space_bar = QShortcut(QKeySequence(Qt.Key_Space), self)
-        self.space_bar.activated.connect(self.space_bar_pressed)
+        self.space_bar.activated.connect(self.play_pause_vid)
 
         # Next frame shortcut
         self.right_key = QShortcut(QKeySequence(Qt.Key_Right), self)
@@ -231,16 +225,12 @@ class AnalyzeVidWindow(QMainWindow):
     def select_color(self, color):
         self.drawing_color = color
 
-    def play_vid(self):
-        self.play_using_button = True
-
-    def pause_vid(self):
-        self.play_using_button = False
-
-    def space_bar_pressed(self):
+    def play_pause_vid(self):
         if self.play_using_button:
+            self.button_play_pause.setText("play")
             self.play_using_button = False
         else:
+            self.button_play_pause.setText("pause")
             self.play_using_button = True
 
     def next_frame(self):
