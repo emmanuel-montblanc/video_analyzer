@@ -27,9 +27,8 @@ class Recorder:
         self.merge_audio_video()
 
     def merge_audio_video(self):
-        # Makes sure the threads have finished
-        while threading.active_count() > 1:
-            time.sleep(1)
+        self.audio_recorder.recording_thread.join()
+        self.screen_recorder.recording_thread.join()
 
         _create_records_folder()
         output_path = self._get_output_path()
@@ -90,6 +89,7 @@ class AudioRecorder:
         print("ended")
 
     def start_recording(self):
+        self.__init__()
         self.recording_thread.start()
         print("started")
 
@@ -107,6 +107,7 @@ class ScreenRecorder:
         self.recording_thread = threading.Thread(target=self._record)
 
     def start_recording(self):
+        self.__init__()
         self.recording_thread.start()
         print("started")
 
