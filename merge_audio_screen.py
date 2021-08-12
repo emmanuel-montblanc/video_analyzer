@@ -17,7 +17,7 @@ def merge(video_name):
 
 
 def _create_records_folder():
-    records_folder = Path.cwd() / "insta_videos"
+    records_folder = Path.cwd() / "records"
     records_folder.mkdir(parents=True, exist_ok=True)
 
 
