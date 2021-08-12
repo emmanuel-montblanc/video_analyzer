@@ -6,10 +6,13 @@ from PyQt5.QtCore import Qt, QPoint, QTimer
 from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence
 from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QMessageBox
 
-from screen_recorder import ScreenRecorder
-from audi_recorder import AudioRecorder
-from merge_audio_screen import merge
+from recorder import Recorder
 
+
+# TODO: faire de screen recorder, audio recorder et merge audio screen un seul module recorder
+# TODO: organiser tout le bordel
+# TODO: fonction pour zoomer sur l'image
+# TODO: comparer deux video
 
 class AnalyzeVidWindow(QMainWindow):
 
@@ -32,8 +35,7 @@ class AnalyzeVidWindow(QMainWindow):
             self.pixmap = self.pixmap.scaledToHeight(720)
         self.resize(self.pixmap.width() + 100, self.pixmap.height() + 50)
 
-        self.screen_recorder = ScreenRecorder()
-        self.audio_recorder = AudioRecorder()
+        self.recorder = Recorder(self.video_name)
 
         self.now = datetime.now()
 
@@ -114,10 +116,6 @@ class AnalyzeVidWindow(QMainWindow):
         self.button_pause.setGeometry(self.frameGeometry().width() - 42, 380, 40, 40)
         self.button_pause.clicked.connect(self.pause_vid)
 
-        # Play pause shortcut
-        self.space_bar = QShortcut(QKeySequence("Space"), self)
-        self.space_bar.activated.connect(self.space_bar_pressed)
-
         # Record button
         self.button_record = QPushButton(self)
         self.button_record.setText("start recording")
@@ -129,6 +127,18 @@ class AnalyzeVidWindow(QMainWindow):
         self.button_change_vid.setText("change video")
         self.button_change_vid.setGeometry(self.frameGeometry().width() - 85, 500, 80, 40)
         self.button_change_vid.clicked.connect(self.change_video)
+
+        # Play pause shortcut
+        self.space_bar = QShortcut(QKeySequence(Qt.Key_Space), self)
+        self.space_bar.activated.connect(self.space_bar_pressed)
+
+        # Next frame shortcut
+        self.right_key = QShortcut(QKeySequence(Qt.Key_Right), self)
+        self.right_key.activated.connect(self.next_frame)
+
+        # Previous frame shortcut
+        self.left_key = QShortcut(QKeySequence(Qt.Key_Left), self)
+        self.left_key.activated.connect(self.previous_frame)
 
         # Timer for playing video
         self.timer = QTimer(self)
@@ -234,28 +244,39 @@ class AnalyzeVidWindow(QMainWindow):
         else:
             self.play_using_button = True
 
+    def next_frame(self):
+        self.current_frame += 1
+        self.check_current_frame()
+        self.load_current_frame()
+        self.update()
+
+    def previous_frame(self):
+        self.current_frame -= 1
+        self.check_current_frame()
+        self.load_current_frame()
+        self.update()
+
     def set_speed(self, speed):
         refresh_rate = round(1000/(self.fps * speed))
         self.timer.start(refresh_rate)
 
     def timer_update(self):
         if self.play_using_button:
-            self.current_frame += 1
-            self.check_current_frame()
-            self.load_current_frame()
-            self.update()
+            self.next_frame()
 
     def record_video(self):
         if self.button_record.text() == "start recording":
-            self.screen_recorder.start_recording()
-            self.audio_recorder.start_recording()
+            self.recorder.start_recording()
             self.button_record.setText("stop recording")
         else:
-            self.screen_recorder.stop_recording()
-            self.audio_recorder.stop_recording()
-            merge(self.video_name)
+            self.recorder.stop_recording()
+            self.button_record.setText("start recording")
 
     def change_video(self):
+        # Stop the recording before leaving
+        if self.button_record.text() == "stop recording":
+            self.record_video()
+
         self.master_window.show()
         self.close()
 

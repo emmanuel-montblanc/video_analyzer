@@ -1,0 +1,13 @@
+#Unused
+/old
+/old/Records
+
+#Pycharm
+/.idea
+/__pycache__
+
+# Folders generated
+/temp
+/videos
+/insta_videos
+/records

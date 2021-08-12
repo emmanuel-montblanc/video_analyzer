@@ -5,12 +5,14 @@ import cv2
 
 def get_frames(video_path: Path):
 
+    _create_video_folder()
+
     vid_name = video_path.stem
     working_folder = Path().cwd() / "videos" / vid_name
-    already_loaded = check_if_loaded(working_folder)
+    already_loaded = _check_if_loaded(working_folder)
 
     if not already_loaded:
-        clear_dir(working_folder)
+        _clear_dir(working_folder)
         vid = cv2.VideoCapture(str(video_path))
 
         # loop over the frames of the video
@@ -33,22 +35,27 @@ def get_frames(video_path: Path):
         frame_count -= 1
 
         fps = round(vid.get(cv2.CAP_PROP_FPS))
-        create_info_file(frame_count, fps, vid_name)
+        _create_info_file(frame_count, fps, vid_name)
         vid.release()
 
 
-def clear_dir(directory):
+def _create_video_folder():
+    video_folder = Path.cwd() / "videos"
+    video_folder.mkdir(parents=True, exist_ok=True)
+
+
+def _clear_dir(directory):
     for file in os.listdir(directory):
         os.remove(directory / file)
 
 
-def create_info_file(frame_count, fps, vid_name):
+def _create_info_file(frame_count, fps, vid_name):
     info_file = './videos/' + vid_name + '/info.txt'
     with open(info_file, 'x') as file:
         file.writelines([str(frame_count), '\n' + str(fps)])
 
 
-def check_if_loaded(working_folder):
+def _check_if_loaded(working_folder):
     """
     try to create the folder working_folder and checks if the video was already fully loaded
     :param working_folder: The folder where the frames will be
