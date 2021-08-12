@@ -14,6 +14,7 @@ class SelectVidWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.resize(720, 480)
+        self.setWindowTitle("Video analyzer")
 
         self.video_path = Path()
 
