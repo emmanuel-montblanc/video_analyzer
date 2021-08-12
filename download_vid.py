@@ -3,11 +3,12 @@ import re
 import requests
 import os
 from bs4 import BeautifulSoup
+from pathlib import Path
 
 
-def download_video(video_url, local_filename):
+def download_video(video_url, video_path):
     r = requests.get(video_url, stream=True)
-    with open(os.getcwd()+"/"+local_filename, 'wb') as f:
+    with open(video_path, 'wb') as f:
         for chunk in r.iter_content(1024):
             if chunk:
                 f.write(chunk)
@@ -35,16 +36,25 @@ def get_video_url(response):
             return video_url
 
 
+def create_folder():
+    insta_videos_folder = Path.cwd() / "insta_videos"
+    insta_videos_folder.mkdir(parents=True, exist_ok=True)
+
+
 def download_from_instagram(url):
     response = get_response(url)
     video_url = get_video_url(response)
-    # print(video_url)
+
     post_name = url.split('/p/')[-1].rstrip('/')
     file_name = "insta_video_" + post_name + ".mp4"
-    download_video(video_url,  "insta_videos/" + file_name)
-    return file_name
+    video_path = Path.cwd() / "insta_videos" / file_name
+
+    create_folder()
+    download_video(video_url, video_path)
+
+    return video_path
 
 
 if __name__ == '__main__':
-    url = "https://www.instagram.com/p/CSXN0i9FVgi/"
-    download_from_instagram(url)
+    test_url = "https://www.instagram.com/p/CSXN0i9FVgi/"
+    download_from_instagram(test_url)
