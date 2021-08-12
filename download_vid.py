@@ -1,3 +1,8 @@
+"""
+This module allows you to download a video from instagram with the url of a post
+"""
+
+
 import re
 from pathlib import Path
 

@@ -8,11 +8,10 @@ from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QMessag
 
 from recorder import Recorder
 
-
-# TODO: faire de screen recorder, audio recorder et merge audio screen un seul module recorder
 # TODO: organiser tout le bordel
 # TODO: fonction pour zoomer sur l'image
 # TODO: comparer deux video
+
 
 class AnalyzeVidWindow(QMainWindow):
 
