@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from PyQt5.QtCore import Qt, QPoint, QTimer
+from PyQt5.QtCore import Qt, QPoint, QTimer, QRect
 from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence
 from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel
 
@@ -41,6 +41,12 @@ class AnalyzeVidWindow(QMainWindow):
         self.drawing = False
         self.playing_using_mouse = False
         self.play_using_button = False
+        self.zooming = False
+
+        self.zooming_rect = QRect(round(self.pixmap.width()/3),
+                                         round(self.pixmap.height()/3),
+                                         self.pixmap.width() - round(self.pixmap.width()/3),
+                                         self.pixmap.height() - round(self.pixmap.height()/3))
 
         self.lastPoint = QPoint()
         self.lines = []
@@ -120,6 +126,11 @@ class AnalyzeVidWindow(QMainWindow):
         self.button_change_vid.setText("change video")
         self.button_change_vid.setGeometry(self.frameGeometry().width() - 85, 500, 80, 40)
         self.button_change_vid.clicked.connect(self.change_video)
+
+        self.button_zoom = QPushButton(self)
+        self.button_zoom.setText("zoom")
+        self.button_zoom.setGeometry(self.frameGeometry().width() - 85, 550, 80, 40)
+        self.button_zoom.clicked.connect(self.zoom_image)
 
         # Play pause shortcut
         self.space_bar = QShortcut(QKeySequence(Qt.Key_Space), self)
@@ -217,6 +228,10 @@ class AnalyzeVidWindow(QMainWindow):
         self.pixmap = QPixmap("./videos/" + self.video_name + "/frame" + str(self.current_frame) + ".jpg")
         self.pixmap = self.pixmap.scaledToWidth(my_round(self.frameGeometry().width() - 90))
 
+        if self.zooming:
+            copy = self.pixmap.copy(self.zooming_rect)
+            self.pixmap = copy.scaledToWidth(self.pixmap.width())
+
     def remove_last_line(self):
         if self.lines:
             self.lines.pop()
@@ -266,8 +281,18 @@ class AnalyzeVidWindow(QMainWindow):
         if self.button_record.text() == "stop recording":
             self.record_video()
 
+        # return to the select video windows
         self.master_window.show()
         self.close()
+
+    def zoom_image(self):
+        if not self.zooming:
+            self.zooming = True
+        else:
+            self.zooming = False
+
+        self.load_current_frame()
+        self.update()
 
 
 def my_round(x, base=5):
