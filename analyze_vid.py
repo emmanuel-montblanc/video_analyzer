@@ -8,7 +8,7 @@ from recorder import Recorder
 
 
 # TODO: organiser tout le bordel
-# TODO: fonction pour zoomer sur l'image
+# TODO: help button
 # TODO: comparer deux video
 
 
@@ -41,10 +41,11 @@ class AnalyzeVidWindow(QMainWindow):
         self.drawing = False
         self.playing_using_mouse = False
         self.play_using_button = False
+        self.vid_ratio = self.pixmap.width()/self.pixmap.height()
 
         self.select_zooming = False
         self.zooming = False
-        self.zoom_point1 = QPoint()
+        self.zoom_point = QPoint()
         self.zooming_rect = QRect(round(self.pixmap.width()/3),
                                          round(self.pixmap.height()/3),
                                          self.pixmap.width() - round(self.pixmap.width()/3),
@@ -129,6 +130,7 @@ class AnalyzeVidWindow(QMainWindow):
         self.button_change_vid.setGeometry(self.frameGeometry().width() - 85, 500, 80, 40)
         self.button_change_vid.clicked.connect(self.change_video)
 
+        # Zoom button
         self.button_zoom = QPushButton(self)
         self.button_zoom.setText("zoom")
         self.button_zoom.setGeometry(self.frameGeometry().width() - 85, 550, 80, 40)
@@ -181,6 +183,12 @@ class AnalyzeVidWindow(QMainWindow):
         painter.setPen(QPen(self.drawing_color, 3, Qt.SolidLine))
         for line in self.current_line:
             painter.drawLine(line[0], line[1])
+
+        # If we are selecting where to zoom, draw the current zooming rect
+        if self.select_zooming and self.zoom_point != QPoint():
+            painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
+            painter.drawRect(self.zooming_rect)
+
         painter.end()
 
     def mouseMoveEvent(self, event):
@@ -190,37 +198,46 @@ class AnalyzeVidWindow(QMainWindow):
                 self.lastPoint = event.pos()
                 self.update()
 
+        if event.buttons() and Qt.LeftButton and self.select_zooming:
+            self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
+                                      event.x(), event.x()/self.vid_ratio)
+
+            self.update()
+
         if event.buttons() and Qt.RightButton and self.playing_using_mouse:
             self.update_current_frame(event)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             if self.select_zooming:
-                if self.zoom_point1 == QPoint():
-                    self.zoom_point1 = event.pos()
-                    print(self.zoom_point1)
-                else:
-                    self.zooming_rect = QRect(self.zoom_point1.x(), self.zoom_point1.y(),
-                                              event.x(), event.y())
-                    self.zoom_point1 = QPoint()
-                    self.select_zooming = False
-                    self.zooming = True
-                    self.load_current_frame()
-                    self.update()
+                if self.zoom_point == QPoint():
+                    self.zoom_point = event.pos()
             else:
                 self.drawing = True
                 self.lastPoint = event.pos()
 
         if event.button() == Qt.RightButton:
-            self.update_current_frame(event)
-            self.playing_using_mouse = True
+            if self.select_zooming:
+                self.unzoom()
+            else:
+                self.update_current_frame(event)
+                self.playing_using_mouse = True
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
-            if self.current_line:
-                self.lines.append(self.current_line)
-            self.current_line = []
-            self.drawing = False
+            if self.select_zooming:
+                self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
+                                          event.x(), event.x() / self.vid_ratio)
+                self.zoom_point = QPoint()
+                self.select_zooming = False
+                self.zooming = True
+                self.load_current_frame()
+                self.update()
+            else:
+                if self.current_line:
+                    self.lines.append(self.current_line)
+                self.current_line = []
+                self.drawing = False
 
         if event.button() == Qt.RightButton:
             self.playing_using_mouse = False
@@ -304,11 +321,15 @@ class AnalyzeVidWindow(QMainWindow):
         if not self.zooming:
             self.select_zooming = True
             self.button_zoom.setText("Unzoom")
-        else:
-            self.button_zoom.setText("zoom")
-            self.zooming = False
-            self.select_zooming = False
-            self.zoom_point1 = QPoint()
+            self.button_zoom.clicked.connect(self.unzoom)
+
+    def unzoom(self):
+        self.button_zoom.setText("zoom")
+        self.zooming = False
+        self.select_zooming = False
+        self.zoom_point = QPoint()
+
+        self.button_zoom.clicked.connect(self.zoom_image)
 
         self.load_current_frame()
         self.update()
