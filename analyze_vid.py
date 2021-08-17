@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtCore import Qt, QPoint, QTimer, QRect
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon, QFont
 from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEdit, QFrame, \
     QApplication
 
@@ -344,11 +344,12 @@ class AnalyzeVidWindow(QMainWindow):
 class HelpWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
         self.resize(720, 480)
+        self.setWindowTitle("Help")
 
         self.displayer = QTextEdit(self)
         self.displayer.setGeometry(0, 0, 720, 480)
+        self.displayer.setCurrentFont(QFont('Consolas, 12'))
 
         text = open("help.txt").read()
         self.displayer.setPlainText(text)

@@ -1,4 +1,25 @@
-This is a help text
---------------------
+Change video button
+===================
+This button simply brings you back to the video selection window, and close the analyzer window
 
-I have no motivation to write it now
+Start Recording button
+======================
+This button start recording your screen and your mic, until you press again the button to stop recording (or go back to the video selection window)
+The recordings are saved in the folder "./records/<name_of_the_video>.mkv"
+
+Zoom button
+===========
+This button allows you to zoom on the video, once you clicked on this button, you can draw the rectangle on which you want to zoom, by left clicking on the video and dragging your mouse.
+If you do a right click during the selection of the zoom, it will be canceled
+
+Drawing
+=======
+You have two colors available to draw(for now) : red and green. You can select your color simply by clicking on either the red rectangle or the green rectangle.
+To draw on the video you can simply left click on the video, and maintain it pressed until you want to stop drawing.
+You can delete the last line that you draw by using either the button "undo" or by pressing Ctrl + z on your keyboard.
+
+Playing
+=======
+To play the video, you have two options:
+ - Play with a certain speed: Select the speed by clicking on the corresponding button, and then play and pause the video by either clicking on the play/pause button or by pressing your spacebar. (note: the speed is not really accurate, the x1 speed is much slower than it should be cause it needs to load image by image which is slow)
+ - Play the video by using your mouse: you can play the video by draging your mouse and right clicking on the video. If you right click on the left of the video, it will correspond to the start of the video, if you right click on the right of the video, it will correspond to the end of the video
