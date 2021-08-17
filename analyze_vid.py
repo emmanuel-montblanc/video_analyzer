@@ -1,12 +1,12 @@
 import sys
 
 from PyQt5.QtCore import Qt, QPoint, QTimer, QRect
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon, QFont
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon, QFont, QColor
 from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEdit, QFrame, \
     QApplication
 
 from recorder import Recorder
-from style_sheets import wndw_style, btn_style, lbl_style
+from style_sheets import wndw_style, btn_style, btn_style_red, btn_style_green, lbl_style, WHITE
 
 # TODO: rendre le truc un peu moins moche
 # TODO: comparer deux video
@@ -137,10 +137,10 @@ class AnalyzeVidWindow(QMainWindow):
         self.color_label.setStyleSheet(lbl_style)
         self.button_green.setGeometry(5, 220, 40, 40)
         self.button_green.clicked.connect(lambda: self.select_color(Qt.darkGreen))
-        self.button_green.setStyleSheet("background-color: green")
+        self.button_green.setStyleSheet(btn_style_green)
         self.button_red.setGeometry(50, 220, 40, 40)
         self.button_red.clicked.connect(lambda: self.select_color(Qt.red))
-        self.button_red.setStyleSheet("background-color: red")
+        self.button_red.setStyleSheet(btn_style_red)
         self.button_ctrlz.setText("undo")
         self.button_ctrlz.setGeometry(10, 270, 80, 40)
         self.button_ctrlz.clicked.connect(self.remove_last_line)
@@ -200,12 +200,12 @@ class AnalyzeVidWindow(QMainWindow):
 
     def draw_progress_bar(self, painter):
         # Draw the progress bar
-        painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
+        painter.setPen(QPen(QColor(WHITE), 3, Qt.SolidLine))
         painter.drawLine(QPoint(0, self.frameGeometry().height() - 60),
                          QPoint(self.pixmap.width(), self.frameGeometry().height() - 60))
 
         # Draw the cursor on the progress bar
-        painter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))
+        painter.setPen(QPen(QColor(WHITE), 3, Qt.SolidLine))
         x_pos = int(self.current_frame * self.pixmap.width() / self.nb_frames)
         painter.drawLine(QPoint(x_pos, self.frameGeometry().height()),
                          QPoint(x_pos, self.frameGeometry().height() - 80))
