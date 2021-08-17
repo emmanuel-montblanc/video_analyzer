@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog, QLabel, QLineEdit, QMessageBox
+from PyQt5.QtGui import QIcon
 
 from analyze_vid import AnalyzeVidWindow
 from get_frames_from_vid import get_frames
@@ -15,6 +16,7 @@ class SelectVidWindow(QMainWindow):
         super().__init__()
         self.resize(720, 480)
         self.setWindowTitle("Video analyzer")
+        self.setWindowIcon(QIcon("diamond_twist.png"))
 
         self.video_path = Path()
 

@@ -1,16 +1,15 @@
-from datetime import datetime
 import sys
+
 from PyQt5.QtCore import Qt, QPoint, QTimer, QRect
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence
-from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEdit, QFrame, QApplication
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon
+from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEdit, QFrame, \
+    QApplication
 
 from recorder import Recorder
 
 
-# TODO: organiser tout le bordel
 # TODO: écrire help.txt
 # TODO: comparer deux video
-# TODO: rajouter icone
 
 
 class AnalyzeVidWindow(QMainWindow):
@@ -19,10 +18,11 @@ class AnalyzeVidWindow(QMainWindow):
         super().__init__()
         self.resize(1380, 770)
         self.setWindowTitle(video_name)
+        self.setWindowIcon(QIcon("diamond_twist.png"))
 
         self.master_window = master_window
-
         self.video_name = video_name
+
         with open("./videos/" + self.video_name + "/info.txt") as file:
             self.nb_frames = int(file.readline().strip())
             self.fps = int(file.readline().strip())
@@ -37,7 +37,6 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.fixed_width = self.pixmap.width()
         self.vid_ratio = self.pixmap.width() / self.pixmap.height()
-        print(self.pixmap.width())
 
         self.help_wdw = QMainWindow()
         self.recorder = Recorder(self.video_name)
@@ -57,7 +56,7 @@ class AnalyzeVidWindow(QMainWindow):
         self.drawing_color = Qt.red
 
         self.frame = QFrame(self)
-        self.frame.setGeometry(self.pixmap.width(), 20,
+        self.frame.setGeometry(self.fixed_width, 20,
                                self.frameGeometry().width(), self.frameGeometry().height())
 
         # Help / change vid / record / zoom widgets
@@ -162,14 +161,34 @@ class AnalyzeVidWindow(QMainWindow):
         painter = QPainter()
         painter.begin(self)
 
-        # Draw the video
         painter.drawPixmap(self.pixmap.rect(), self.pixmap)
-        print(self.pixmap.width())
+        self.draw_progress_bar(painter)
+        self.draw_lines(painter)
+        self.draw_zooming_rect(painter)
 
-        # Draw the progress bar of the video
+        painter.end()
+
+    def draw_zooming_rect(self, painter):
+        if self.select_zooming and self.zoom_point != QPoint():
+            painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
+            painter.drawRect(self.zooming_rect)
+
+    def draw_lines(self, painter):
+        # Draw the finished lines
+        for line_group in self.lines:
+            painter.setPen(QPen(line_group[0][2], 3, Qt.SolidLine))
+            for line in line_group:
+                painter.drawLine(line[0], line[1])
+        # Draw the line we are currently drawing
+        painter.setPen(QPen(self.drawing_color, 3, Qt.SolidLine))
+        for line in self.current_line:
+            painter.drawLine(line[0], line[1])
+
+    def draw_progress_bar(self, painter):
+        # Draw the progress bar
         painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
         painter.drawLine(QPoint(0, self.frameGeometry().height() - 60),
-                         QPoint(self.pixmap.width(), self.frameGeometry().height()-60))
+                         QPoint(self.pixmap.width(), self.frameGeometry().height() - 60))
 
         # Draw the cursor on the progress bar
         painter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))
@@ -177,39 +196,19 @@ class AnalyzeVidWindow(QMainWindow):
         painter.drawLine(QPoint(x_pos, self.frameGeometry().height()),
                          QPoint(x_pos, self.frameGeometry().height() - 80))
 
-        # Draw the finished lines
-        for line_group in self.lines:
-            painter.setPen(QPen(line_group[0][2], 3, Qt.SolidLine))
-            for line in line_group:
-                painter.drawLine(line[0], line[1])
-
-        # Draw the line we are currently drawing
-        painter.setPen(QPen(self.drawing_color, 3, Qt.SolidLine))
-        for line in self.current_line:
-            painter.drawLine(line[0], line[1])
-
-        # If we are selecting where to zoom, draw the current zooming rect
-        if self.select_zooming and self.zoom_point != QPoint():
-            painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
-            painter.drawRect(self.zooming_rect)
-
-        painter.end()
-
     def mouseMoveEvent(self, event):
         if event.buttons() and Qt.LeftButton and self.drawing:
             if event.x() < self.pixmap.width() and event.y() < self.pixmap.height():
                 self.current_line.append((self.lastPoint, event.pos(), self.drawing_color))
                 self.lastPoint = event.pos()
-                self.update()
 
         if event.buttons() and Qt.LeftButton and self.select_zooming:
             self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
                                       event.x(), event.x()/self.vid_ratio)
 
-            self.update()
-
         if event.buttons() and Qt.RightButton and self.playing_using_mouse:
             self.update_current_frame(event)
+        self.update()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -252,7 +251,6 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.check_current_frame()
         self.load_current_frame()
-        self.update()
 
     def check_current_frame(self):
         if self.current_frame > self.nb_frames:
