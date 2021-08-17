@@ -59,3 +59,7 @@ lbl_style = "QLabel {" \
             "   font: 12px;" \
             "   color: " + WHITE + ";}"
 
+entry_style = "QLineEdit {" \
+            "   font: 12px;" \
+            "   color: " + WHITE + ";}"
+
