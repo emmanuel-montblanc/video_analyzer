@@ -4,16 +4,12 @@ from pathlib import Path
 import requests
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog, QLabel, QLineEdit, \
-    QMessageBox
+    QMessageBox, QFrame
 
 from analyze_vid import AnalyzeVidWindow
 from download_vid import download_from_instagram
 from get_frames_from_vid import get_frames
 from style_sheets import wndw_style, btn_style, lbl_style, entry_style
-
-
-# TODO: centrer boutons select insta vid
-# TODO: creer des frames pour eviter d'avoir besoin de les masquer 1 par 1
 
 
 class SelectVidWindow(QMainWindow):
@@ -26,53 +22,58 @@ class SelectVidWindow(QMainWindow):
 
         self.video_path = Path()
 
+        # Frame for the 2 main buttons
+        self.frame_main_buttons = QFrame(self)
+        self.frame_main_buttons.setGeometry(0, 0, self.geometry().width(), self.geometry().height())
+
         # Select local video button
-        self.local_vid_btn = QPushButton(self)
+        self.local_vid_btn = QPushButton(self.frame_main_buttons)
         self.local_vid_btn.setText("Analyze local video")
         self.local_vid_btn.setGeometry(150, round(self.frameGeometry().height()/2), 150, 40)
         self.local_vid_btn.clicked.connect(self.select_local_vid)
         self.local_vid_btn.setStyleSheet(btn_style)
 
         # Select instagram video button
-        self.insta_vid_btn = QPushButton(self)
+        self.insta_vid_btn = QPushButton(self.frame_main_buttons)
         self.insta_vid_btn.setText("Analyze instagram video")
         self.insta_vid_btn.setGeometry(self.frameGeometry().width() - 300,
                                        round(self.frameGeometry().height()/2), 150, 40)
         self.insta_vid_btn.clicked.connect(self.select_insta_vid)
         self.insta_vid_btn.setStyleSheet(btn_style)
 
+        # Frame for selecting insta video
+        self.frame_select_insta = QFrame(self)
+        self.frame_select_insta.setGeometry(0, 0, self.geometry().width(), self.geometry().height())
+
         # info label
-        self.insta_label = QLabel(self)
+        self.insta_label = QLabel(self.frame_select_insta)
         self.insta_label.setText("Enter the instagram post URL")
         self.insta_label.setGeometry(round(self.frameGeometry().width()/2) - 100,
                                      round(self.frameGeometry().height() / 2) - 40,
                                      200, 40)
         self.insta_label.setStyleSheet(lbl_style)
-        self.insta_label.hide()
 
         # Download button
-        self.download_btn = QPushButton(self)
+        self.download_btn = QPushButton(self.frame_select_insta)
         self.download_btn.setText("Ok")
-        self.download_btn.setGeometry(200,
-                                    round(self.frameGeometry().height()/2) + 40, 100, 40)
+        self.download_btn.setGeometry(210,
+                                    round(self.frameGeometry().height()/2) + 45, 100, 40)
         self.download_btn.clicked.connect(self.download_vid)
         self.download_btn.setStyleSheet(btn_style)
-        self.download_btn.hide()
 
         # Return button
-        self.return_btn = QPushButton(self)
+        self.return_btn = QPushButton(self.frame_select_insta)
         self.return_btn.setText("return")
-        self.return_btn.setGeometry(self.frameGeometry().width() - 200,
-                                    round(self.frameGeometry().height()/2) + 40, 100, 40)
+        self.return_btn.setGeometry(410,
+                                    round(self.frameGeometry().height()/2) + 45, 100, 40)
         self.return_btn.clicked.connect(self.return_home_page)
         self.return_btn.setStyleSheet(btn_style)
-        self.return_btn.hide()
 
         # url entry
-        self.url_entry = QLineEdit(self)
+        self.url_entry = QLineEdit(self.frame_select_insta)
         self.url_entry.setGeometry(210, round(self.frameGeometry().height()/2), 300, 40)
         self.url_entry.setStyleSheet(entry_style)
-        self.url_entry.hide()
+        self.frame_select_insta.hide()
 
         self.show()
 
@@ -87,22 +88,12 @@ class SelectVidWindow(QMainWindow):
             self.start_analyze()
 
     def select_insta_vid(self):
-        self.insta_label.show()
-        self.url_entry.show()
-        self.return_btn.show()
-        self.download_btn.show()
-
-        self.local_vid_btn.hide()
-        self.insta_vid_btn.hide()
+        self.frame_select_insta.show()
+        self.frame_main_buttons.hide()
 
     def return_home_page(self):
-        self.insta_label.hide()
-        self.url_entry.hide()
-        self.download_btn.hide()
-        self.return_btn.hide()
-
-        self.local_vid_btn.show()
-        self.insta_vid_btn.show()
+        self.frame_select_insta.hide()
+        self.frame_main_buttons.show()
 
     def download_vid(self):
         url = self.url_entry.text()
