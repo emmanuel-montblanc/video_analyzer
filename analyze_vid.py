@@ -6,9 +6,9 @@ from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEd
     QApplication
 
 from recorder import Recorder
+from style_sheets import wndw_style, btn_style, lbl_style
 
-
-# TODO: écrire help.txt
+# TODO: rendre le truc un peu moins moche
 # TODO: comparer deux video
 
 
@@ -16,12 +16,14 @@ class AnalyzeVidWindow(QMainWindow):
 
     def __init__(self, master_window, video_name):
         super().__init__()
-        self.resize(1380, 770)
-        self.setWindowTitle(video_name)
-        self.setWindowIcon(QIcon("diamond_twist.png"))
 
         self.master_window = master_window
         self.video_name = video_name
+
+        self.resize(1380, 770)
+        self.setWindowTitle(video_name)
+        self.setWindowIcon(QIcon("diamond_twist.png"))
+        self.setStyleSheet(wndw_style)
 
         with open("./videos/" + self.video_name + "/info.txt") as file:
             self.nb_frames = int(file.readline().strip())
@@ -109,53 +111,65 @@ class AnalyzeVidWindow(QMainWindow):
         self.button_help.setText("help")
         self.button_help.setGeometry(10, 0, 80, 40)
         self.button_help.clicked.connect(self.help)
+        self.button_help.setStyleSheet(btn_style)
 
         # Button change video
         self.button_change_vid.setText("change video")
         self.button_change_vid.setGeometry(10, 50, 80, 40)
         self.button_change_vid.clicked.connect(self.change_video)
+        self.button_change_vid.setStyleSheet(btn_style)
 
         # Button record
         self.button_record.setText("start recording")
         self.button_record.setGeometry(10, 100, 80, 40)
         self.button_record.clicked.connect(self.record_video)
+        self.button_record.setStyleSheet(btn_style)
 
         # Button zoom
         self.button_zoom.setText("zoom")
         self.button_zoom.setGeometry(10, 150, 80, 40)
         self.button_zoom.clicked.connect(self.zoom_image)
+        self.button_zoom.setStyleSheet(btn_style)
 
         # Drawing widgets
         self.color_label.setText("drawing color:")
         self.color_label.setGeometry(10, 200, 80, 20)
-        self.button_green.setStyleSheet("background-color: green")
+        self.color_label.setStyleSheet(lbl_style)
         self.button_green.setGeometry(5, 220, 40, 40)
         self.button_green.clicked.connect(lambda: self.select_color(Qt.darkGreen))
-        self.button_red.setStyleSheet("background-color: red")
+        self.button_green.setStyleSheet("background-color: green")
         self.button_red.setGeometry(50, 220, 40, 40)
         self.button_red.clicked.connect(lambda: self.select_color(Qt.red))
+        self.button_red.setStyleSheet("background-color: red")
         self.button_ctrlz.setText("undo")
         self.button_ctrlz.setGeometry(10, 270, 80, 40)
         self.button_ctrlz.clicked.connect(self.remove_last_line)
+        self.button_ctrlz.setStyleSheet(btn_style)
 
         # Playing widgets
         self.speed_label.setText("playing speed:")
         self.speed_label.setGeometry(10, 320, 80, 20)
+        self.speed_label.setStyleSheet(lbl_style)
         self.speed_x1.setText("x1")
         self.speed_x1.setGeometry(10, 340, 80, 20)
         self.speed_x1.clicked.connect(lambda: self.set_speed(1))
+        self.speed_x1.setStyleSheet(btn_style)
         self.speed_x05.setText("x0.5")
         self.speed_x05.setGeometry(10, 360, 80, 20)
         self.speed_x05.clicked.connect(lambda: self.set_speed(0.5))
+        self.speed_x05.setStyleSheet(btn_style)
         self.speed_x025.setText("x0.25")
         self.speed_x025.setGeometry(10, 380, 80, 20)
         self.speed_x025.clicked.connect(lambda: self.set_speed(0.25))
+        self.speed_x025.setStyleSheet(btn_style)
         self.speed_x0125.setText("x0.125")
         self.speed_x0125.setGeometry(10, 400, 80, 20)
         self.speed_x0125.clicked.connect(lambda: self.set_speed(0.125))
+        self.speed_x0125.setStyleSheet(btn_style)
         self.button_play_pause.setText("Play")
         self.button_play_pause.setGeometry(10, 430, 80, 40)
         self.button_play_pause.clicked.connect(self.play_pause_vid)
+        self.button_play_pause.setStyleSheet(btn_style)
 
     def paintEvent(self, event):
         painter = QPainter()
@@ -297,6 +311,7 @@ class AnalyzeVidWindow(QMainWindow):
     def set_speed(self, speed):
         refresh_rate = round(1000/(self.fps * speed))
         self.timer.start(refresh_rate)
+
 
     def timer_update(self):
         if self.play_using_button:
