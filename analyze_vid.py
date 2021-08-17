@@ -2,14 +2,15 @@ from datetime import datetime
 
 from PyQt5.QtCore import Qt, QPoint, QTimer, QRect
 from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence
-from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel
+from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEdit, QVBoxLayout
 
 from recorder import Recorder
 
 
 # TODO: organiser tout le bordel
-# TODO: help button
+# TODO: écrire help.txt
 # TODO: comparer deux video
+# TODO: rajouter icone
 
 
 class AnalyzeVidWindow(QMainWindow):
@@ -55,6 +56,8 @@ class AnalyzeVidWindow(QMainWindow):
         self.lines = []
         self.current_line = []
         self.drawing_color = Qt.red
+
+        self.help_wdw = QMainWindow()
 
         # Undo button
         self.button_ctrlz = QPushButton(self)
@@ -135,6 +138,11 @@ class AnalyzeVidWindow(QMainWindow):
         self.button_zoom.setText("zoom")
         self.button_zoom.setGeometry(self.frameGeometry().width() - 85, 550, 80, 40)
         self.button_zoom.clicked.connect(self.zoom_image)
+
+        self.button_help = QPushButton(self)
+        self.button_help.setText("help")
+        self.button_help.setGeometry(self.frameGeometry().width() - 85, 600, 80, 40)
+        self.button_help.clicked.connect(self.help)
 
         # Play pause shortcut
         self.space_bar = QShortcut(QKeySequence(Qt.Key_Space), self)
@@ -333,6 +341,24 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.load_current_frame()
         self.update()
+
+    def help(self):
+        self.help_wdw = HelpWindow()
+        self.help_wdw.show()
+
+
+class HelpWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.resize(720, 480)
+
+        self.displayer = QTextEdit(self)
+        self.displayer.setGeometry(0, 0, 720, 480)
+
+        text = open("help.txt").read()
+        self.displayer.setPlainText(text)
+        self.displayer.setReadOnly(True)
 
 
 def my_round(x, base=5):
