@@ -25,6 +25,9 @@ def get_frames(video_path: Path):
         _clear_dir(working_folder)
         vid = cv2.VideoCapture(str(video_path))
 
+        fps = round(vid.get(cv2.CAP_PROP_FPS))
+        total_count = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
+
         # loop over the frames of the video
         frame_count = 0
         while True:
@@ -32,7 +35,7 @@ def get_frames(video_path: Path):
 
             if ret:
                 if (frame_count % 10) == 0:
-                    print("creating frame nb " + str(frame_count))
+                    print("creating frame nb " + str(frame_count) + " / " + str(total_count))
 
                 name = str(working_folder / ("frame" + str(frame_count) + ".jpg"))
                 cv2.imwrite(name, frame)
@@ -44,7 +47,6 @@ def get_frames(video_path: Path):
         # At the last iteration, the frame count is still increase, but there no more images created
         frame_count -= 1
 
-        fps = round(vid.get(cv2.CAP_PROP_FPS))
         _create_info_file(frame_count, fps, working_folder)
         vid.release()
 
