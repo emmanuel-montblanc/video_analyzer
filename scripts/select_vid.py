@@ -1,15 +1,16 @@
 import sys
 from pathlib import Path
-
+import time
 import requests
 from PyQt5.QtGui import QIcon, QFontDatabase
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog, QLabel, QLineEdit, \
     QMessageBox, QFrame
+from PyQt5.QtCore import QThread, pyqtSignal
 
 from analyze_vid import AnalyzeVidWindow
 from download_vid import download_from_instagram
 from get_frames_from_vid import get_frames
-from style_sheets import wndw_style, btn_style, lbl_style, entry_style
+from style_sheets import wndw_style, btn_style, lbl_style, lbl_state_style, entry_style
 
 
 class SelectVidWindow(QMainWindow):
@@ -21,6 +22,7 @@ class SelectVidWindow(QMainWindow):
         self.setStyleSheet(wndw_style)
 
         self.analyze_window = QMainWindow()
+        self.thread = QThread()
 
         self.video_path = Path()
 
@@ -47,13 +49,13 @@ class SelectVidWindow(QMainWindow):
         self.frame_select_insta = QFrame(self)
         self.frame_select_insta.setGeometry(0, 0, self.geometry().width(), self.geometry().height())
 
-        # info label
-        self.insta_label = QLabel(self.frame_select_insta)
-        self.insta_label.setText("Enter the instagram post URL")
-        self.insta_label.setGeometry(round(self.frameGeometry().width()/2) - 100,
-                                     round(self.frameGeometry().height() / 2) - 40,
-                                     200, 40)
-        self.insta_label.setStyleSheet(lbl_style)
+        # enter url label
+        self.insta_lbl = QLabel(self.frame_select_insta)
+        self.insta_lbl.setText("Enter the instagram post URL")
+        self.insta_lbl.setGeometry(round(self.frameGeometry().width() / 2) - 100,
+                                   round(self.frameGeometry().height() / 2) - 40,
+                                   200, 40)
+        self.insta_lbl.setStyleSheet(lbl_style)
 
         # Download button
         self.download_btn = QPushButton(self.frame_select_insta)
@@ -76,6 +78,14 @@ class SelectVidWindow(QMainWindow):
         self.url_entry.setGeometry(185, round(self.frameGeometry().height()/2), 350, 40)
         self.url_entry.setStyleSheet(entry_style)
         self.frame_select_insta.hide()
+
+        # info state label
+        self.info_state_lbl = QLabel(self)
+        self.info_state_lbl.setText("")
+        self.info_state_lbl.setGeometry(0,
+                                        round(self.frameGeometry().height() / 2) - 200,
+                                        self.frameGeometry().width(), 100)
+        self.info_state_lbl.setStyleSheet(lbl_state_style)
 
         self.show()
 
@@ -101,19 +111,42 @@ class SelectVidWindow(QMainWindow):
         url = self.url_entry.text()
         if url:
             try:
+                self.info_state_lbl.setText("Downloading the video from : " + url)
                 file_name = download_from_instagram(url)
                 self.video_path = Path.cwd().parent / "insta_videos" / file_name
+
                 self.start_analyze()
             except requests.exceptions.MissingSchema:
+                self.info_state_lbl.setText("")
                 error_pop_up = QMessageBox(self)
                 error_pop_up.setIcon(QMessageBox.Critical)
                 error_pop_up.setText('Invalid instagram post url')
                 error_pop_up.show()
 
     def start_analyze(self):
-        get_frames(self.video_path)
+        self.info_state_lbl.setText("Extracting frames from the video,"
+                                    "\nplease wait")
+        self.frame_main_buttons.hide()
+        self.thread = ExtractFramesThread(self.video_path)
+        self.thread.start()
+        self.thread.finished.connect(self.finished_getting_frames)
+
+    def finished_getting_frames(self):
+        self.info_state_lbl.setText("")
         self.analyze_window = AnalyzeVidWindow(self, self.video_path.stem)
         self.hide()
+
+
+class ExtractFramesThread(QThread):
+    finished = pyqtSignal()
+
+    def __init__(self, video_path):
+        super().__init__()
+        self.video_path = video_path
+
+    def run(self):
+        get_frames(self.video_path)
+        self.finished.emit()
 
 
 if __name__ == '__main__':

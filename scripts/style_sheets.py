@@ -91,6 +91,11 @@ lbl_style = "QLabel {" \
             "   font: 10pt JetBrains Mono;" \
             "   color: " + WHITE + ";}"
 
+lbl_state_style = "QLabel {" \
+            "   font: 16pt JetBrains Mono;" \
+            "   qproperty-alignment: AlignCenter;" \
+            "   color: " + WHITE + ";}"
+
 entry_style = "QLineEdit {" \
             "   font: 10pt JetBrains Mono;" \
             "   color: " + WHITE + ";}"
