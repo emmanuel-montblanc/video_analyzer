@@ -1,16 +1,19 @@
 import sys
 from pathlib import Path
-import time
+
 import requests
+from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QIcon, QFontDatabase
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog, QLabel, QLineEdit, \
     QMessageBox, QFrame
-from PyQt5.QtCore import QThread, pyqtSignal
 
 from analyze_vid import AnalyzeVidWindow
 from download_vid import download_from_instagram
-from get_frames_from_vid import get_frames
+from get_frames_from_vid import ExtractFramesThread
 from style_sheets import wndw_style, btn_style, lbl_style, lbl_state_style, entry_style
+
+
+# TODO: add a loading bar, when extracting the frames
 
 
 class SelectVidWindow(QMainWindow):
@@ -82,10 +85,15 @@ class SelectVidWindow(QMainWindow):
         # info state label
         self.info_state_lbl = QLabel(self)
         self.info_state_lbl.setText("")
-        self.info_state_lbl.setGeometry(0,
-                                        round(self.frameGeometry().height() / 2) - 200,
+        self.info_state_lbl.setGeometry(0, round(self.frameGeometry().height() / 2) - 200,
                                         self.frameGeometry().width(), 100)
         self.info_state_lbl.setStyleSheet(lbl_state_style)
+
+        self.progress_lbl = QLabel(self)
+        self.progress_lbl.setText("")
+        self.progress_lbl.setGeometry(0, self.frameGeometry().height() - 150,
+                                        self.frameGeometry().width(), 100)
+        self.progress_lbl.setStyleSheet(lbl_state_style)
 
         self.show()
 
@@ -129,24 +137,17 @@ class SelectVidWindow(QMainWindow):
         self.frame_main_buttons.hide()
         self.thread = ExtractFramesThread(self.video_path)
         self.thread.start()
+        self.thread.progression.connect(self.update_extraction_progress)
         self.thread.finished.connect(self.finished_getting_frames)
 
     def finished_getting_frames(self):
         self.info_state_lbl.setText("")
+        self.progress_lbl.setText("")
         self.analyze_window = AnalyzeVidWindow(self, self.video_path.stem)
         self.hide()
 
-
-class ExtractFramesThread(QThread):
-    finished = pyqtSignal()
-
-    def __init__(self, video_path):
-        super().__init__()
-        self.video_path = video_path
-
-    def run(self):
-        get_frames(self.video_path)
-        self.finished.emit()
+    def update_extraction_progress(self, current, total):
+        self.progress_lbl.setText("Extracting frame nb " + str(current) + " / " + str(total))
 
 
 if __name__ == '__main__':

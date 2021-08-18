@@ -5,50 +5,63 @@ This modules allows you to extract the frames from a video, and store them in a 
 import os
 from pathlib import Path
 import cv2
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
-def get_frames(video_path: Path):
-    """
-    Checks if the video wasnt loaded yet, if it wasn't, extract every frame from the video,
-    and save them in the folder videos/<name of the video>
-    :param video_path: the video we want to extract the frames from
-    :return: None
-    """
+class ExtractFramesThread(QThread):
+    finished = pyqtSignal()
+    progression = pyqtSignal(int, int)
 
-    _create_video_folder()
+    def __init__(self, video_path):
+        super().__init__()
+        self.video_path = video_path
 
-    vid_name = video_path.stem
-    working_folder = Path().cwd().parent / "videos" / vid_name
-    already_loaded = _check_if_loaded(working_folder)
+    def run(self):
+        self.get_frames()
+        self.finished.emit()
 
-    if not already_loaded:
-        _clear_dir(working_folder)
-        vid = cv2.VideoCapture(str(video_path))
+    def get_frames(self):
+        """
+        Checks if the video wasnt loaded yet, if it wasn't, extract every frame from the video,
+        and save them in the folder videos/<name of the video>
+        :return: None
+        """
 
-        fps = round(vid.get(cv2.CAP_PROP_FPS))
-        total_count = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
+        _create_video_folder()
 
-        # loop over the frames of the video
-        frame_count = 0
-        while True:
-            ret, frame = vid.read()
+        vid_name = self.video_path.stem
+        working_folder = Path().cwd().parent / "videos" / vid_name
+        already_loaded = _check_if_loaded(working_folder)
 
-            if ret:
-                if (frame_count % 10) == 0:
-                    print("creating frame nb " + str(frame_count) + " / " + str(total_count))
+        if not already_loaded:
+            _clear_dir(working_folder)
+            vid = cv2.VideoCapture(str(self.video_path))
 
-                name = str(working_folder / ("frame" + str(frame_count) + ".jpg"))
-                cv2.imwrite(name, frame)
+            fps = round(vid.get(cv2.CAP_PROP_FPS))
+            total_count = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
 
-                frame_count += 1
-            else:
-                break
+            # loop over the frames of the video
+            frame_count = 0
+            while True:
+                ret, frame = vid.read()
 
-        # At the last iteration, the frame count is still increase, but there no more images created
-        frame_count -= 1
+                if ret:
+                    if (frame_count % 10) == 0:
+                        print("creating frame nb " + str(frame_count) + " / " + str(total_count))
+                        self.progression.emit(frame_count, total_count)
 
-        _create_info_file(frame_count, fps, working_folder)
-        vid.release()
+                    name = str(working_folder / ("frame" + str(frame_count) + ".jpg"))
+                    cv2.imwrite(name, frame)
+
+                    frame_count += 1
+                else:
+                    break
+
+            # At the last iteration, the frame count is still increase, but there no more images created
+            frame_count -= 1
+
+            _create_info_file(frame_count, fps, working_folder)
+            vid.release()
 
 
 def _create_video_folder():
