@@ -5,7 +5,7 @@ import requests
 from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QIcon, QFontDatabase
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog, QLabel, QLineEdit, \
-    QMessageBox, QFrame
+    QMessageBox, QFrame, QProgressBar
 
 from analyze_vid import AnalyzeVidWindow
 from download_vid import download_from_instagram
@@ -89,11 +89,19 @@ class SelectVidWindow(QMainWindow):
                                         self.frameGeometry().width(), 100)
         self.info_state_lbl.setStyleSheet(lbl_state_style)
 
+        # progress label
         self.progress_lbl = QLabel(self)
         self.progress_lbl.setText("")
-        self.progress_lbl.setGeometry(0, self.frameGeometry().height() - 150,
+        self.progress_lbl.setGeometry(0, self.frameGeometry().height() - 200,
                                         self.frameGeometry().width(), 100)
         self.progress_lbl.setStyleSheet(lbl_state_style)
+        self.progress_lbl.hide()
+
+        # Progress bar
+        self.progress_bar = QProgressBar(self)
+        self.progress_bar.setGeometry(100, self.geometry().height() - 100,
+                                      self.geometry().width() - 200, 50)
+        self.progress_bar.hide()
 
         self.show()
 
@@ -135,19 +143,20 @@ class SelectVidWindow(QMainWindow):
         self.info_state_lbl.setText("Extracting frames from the video,"
                                     "\nplease wait")
         self.frame_main_buttons.hide()
+        self.progress_lbl.show()
+        self.progress_bar.show()
         self.thread = ExtractFramesThread(self.video_path)
         self.thread.start()
         self.thread.progression.connect(self.update_extraction_progress)
         self.thread.finished.connect(self.finished_getting_frames)
 
     def finished_getting_frames(self):
-        self.info_state_lbl.setText("")
-        self.progress_lbl.setText("")
         self.analyze_window = AnalyzeVidWindow(self, self.video_path.stem)
         self.hide()
 
     def update_extraction_progress(self, current, total):
-        self.progress_lbl.setText("Extracting frame nb " + str(current) + " / " + str(total))
+        self.progress_lbl.setText("Extracting frame " + str(current) + " / " + str(total))
+        self.progress_bar.setValue(int(current*100/total))
 
 
 if __name__ == '__main__':
