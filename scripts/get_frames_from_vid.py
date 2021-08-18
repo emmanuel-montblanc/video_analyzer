@@ -18,7 +18,7 @@ def get_frames(video_path: Path):
     _create_video_folder()
 
     vid_name = video_path.stem
-    working_folder = Path().cwd() / "videos" / vid_name
+    working_folder = Path().cwd().parent / "videos" / vid_name
     already_loaded = _check_if_loaded(working_folder)
 
     if not already_loaded:
@@ -34,7 +34,7 @@ def get_frames(video_path: Path):
                 if (frame_count % 10) == 0:
                     print("creating frame nb " + str(frame_count))
 
-                name = './videos/' + vid_name + '/frame' + str(frame_count) + '.jpg'
+                name = working_folder / ("frame" + str(frame_count) + ".jpg")
                 cv2.imwrite(name, frame)
 
                 frame_count += 1
@@ -45,7 +45,7 @@ def get_frames(video_path: Path):
         frame_count -= 1
 
         fps = round(vid.get(cv2.CAP_PROP_FPS))
-        _create_info_file(frame_count, fps, vid_name)
+        _create_info_file(frame_count, fps, working_folder)
         vid.release()
 
 
@@ -70,16 +70,16 @@ def _clear_dir(directory):
         os.remove(directory / file)
 
 
-def _create_info_file(frame_count, fps, vid_name):
+def _create_info_file(frame_count, fps, working_folder):
     """
     Create the info file, a .txt file with the nb of frames and the fps of the video
     :param frame_count:  the number of frames of the video
     :param fps: the fps of the video
-    :param vid_name: the name of the viode
+    :param working_folder: the path to the folder containing the frames and infos
     :return: None
     """
 
-    info_file = './videos/' + vid_name + '/info.txt'
+    info_file = working_folder / "info.txt"
     with open(info_file, 'x') as file:
         file.writelines([str(frame_count), '\n' + str(fps)])
 
@@ -113,6 +113,8 @@ def _check_if_loaded(working_folder):
                 if not frame.exists():
                     already_loaded = False
                     print("missing frame " + str(i))
+        else:
+            print("no info file")
 
     if already_loaded:
         print("video already loaded")

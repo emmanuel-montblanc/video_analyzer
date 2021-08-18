@@ -24,15 +24,15 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.resize(1380, 770)
         self.setWindowTitle(video_name)
-        self.setWindowIcon(QIcon("resources/diamond_twist.png"))
+        self.setWindowIcon(QIcon("../resources/diamond_twist.png"))
         self.setStyleSheet(wndw_style)
 
-        with open("./videos/" + self.video_name + "/info.txt") as file:
+        with open("../videos/" + self.video_name + "/info.txt") as file:
             self.nb_frames = int(file.readline().strip())
             self.fps = int(file.readline().strip())
 
         self.current_frame = 0
-        self.pixmap = QPixmap("./videos/" + self.video_name + "/frame0.jpg")
+        self.pixmap = QPixmap("../videos/" + self.video_name + "/frame0.jpg")
         self.adapt_size()
 
         self.fixed_width = self.pixmap.width()
@@ -281,7 +281,7 @@ class AnalyzeVidWindow(QMainWindow):
             self.current_frame = 0
 
     def load_current_frame(self):
-        self.pixmap = QPixmap("./videos/" + self.video_name + "/frame" + str(self.current_frame) + ".jpg")
+        self.pixmap = QPixmap("../videos/" + self.video_name + "/frame" + str(self.current_frame) + ".jpg")
         self.pixmap = self.pixmap.scaledToWidth(self.fixed_width)
 
         if self.zooming:
@@ -293,7 +293,7 @@ class AnalyzeVidWindow(QMainWindow):
             self.lines.pop()
             self.update()
 
-    def select_color(self, color):
+    def select_color(self):
         sender = self.sender()
         if sender is self.button_green:
             self.drawing_color = QColor(GREEN)
@@ -399,14 +399,14 @@ class HelpWindow(QMainWindow):
         self.displayer.setGeometry(0, 0, screen_size.width()*0.8, screen_size.height()*0.8)
         self.displayer.setStyleSheet(dsply_txt_style)
 
-        text = open("resources/help.txt").read()
+        text = open("../resources/help.txt").read()
         self.displayer.setPlainText(text)
         self.displayer.setReadOnly(True)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    QFontDatabase.addApplicationFont("resources/JetBrainsMono-Regular.ttf")
+    QFontDatabase.addApplicationFont("../resources/JetBrainsMono-Regular.ttf")
     # print(QFontDatabase().families())
-    main_window = AnalyzeVidWindow("", "VID_20201026_190145")
+    main_window = AnalyzeVidWindow("", "VID_20200522_151949")
     sys.exit(app.exec_())

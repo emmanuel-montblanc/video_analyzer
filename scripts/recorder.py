@@ -35,11 +35,11 @@ class Recorder:
         _create_records_folder()
         output_path = self._get_output_path()
 
-        cmd = "ffmpeg -i ./temp/screen.avi -i ./temp/audio.wav -shortest -c copy " + str(output_path)
+        cmd = "ffmpeg -i ../temp/screen.avi -i ../temp/audio.wav -shortest -c copy " + str(output_path)
         subprocess.call(cmd, shell=True)
 
     def _get_output_path(self):
-        record_folder = Path.cwd() / "records"
+        record_folder = Path.cwd().parent / "records"
         output_name = self.video_name + ".mkv"
         i = 0
         while (record_folder / output_name).exists():

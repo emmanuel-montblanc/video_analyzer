@@ -64,7 +64,7 @@ def _create_insta_videos_folder():
     :return: None
     """
 
-    insta_videos_folder = Path.cwd() / "insta_videos"
+    insta_videos_folder = Path.cwd().parent / "insta_videos"
     insta_videos_folder.mkdir(parents=True, exist_ok=True)
 
 
@@ -76,14 +76,15 @@ def download_from_instagram(post_url):
     :return: video_path: the path of the video downloaded
     """
 
+    _create_insta_videos_folder()
+
     response = _get_response(post_url)
     video_url = _get_video_url(response)
 
     post_name = post_url.split('/p/')[-1].rstrip('/')
     file_name = "insta_video_" + post_name + ".mp4"
-    video_path = Path.cwd() / "insta_videos" / file_name
+    video_path = Path.cwd().parent / "insta_videos" / file_name
 
-    _create_insta_videos_folder()
     _download_video(video_url, video_path)
 
     return video_path

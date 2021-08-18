@@ -17,7 +17,7 @@ class SelectVidWindow(QMainWindow):
         super().__init__()
         self.resize(720, 480)
         self.setWindowTitle("Video analyzer")
-        self.setWindowIcon(QIcon("resources/diamond_twist.png"))
+        self.setWindowIcon(QIcon("../resources/diamond_twist.png"))
         self.setStyleSheet(wndw_style)
 
         self.analyze_window = QMainWindow()
@@ -102,7 +102,7 @@ class SelectVidWindow(QMainWindow):
         if url:
             try:
                 file_name = download_from_instagram(url)
-                self.video_path = Path.cwd() / "insta_videos" / file_name
+                self.video_path = Path.cwd().parent / "insta_videos" / file_name
                 self.start_analyze()
             except requests.exceptions.MissingSchema:
                 error_pop_up = QMessageBox(self)
@@ -118,6 +118,6 @@ class SelectVidWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    QFontDatabase.addApplicationFont("resources/JetBrainsMono-Regular.ttf")
+    QFontDatabase.addApplicationFont("../resources/JetBrainsMono-Regular.ttf")
     main_window = SelectVidWindow()
     sys.exit(app.exec_())
