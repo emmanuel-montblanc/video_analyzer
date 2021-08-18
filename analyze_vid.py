@@ -6,7 +6,8 @@ from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEd
     QApplication
 
 from recorder import Recorder
-from style_sheets import wndw_style, btn_style, btn_style_red, btn_style_green, lbl_style, \
+from style_sheets import wndw_style, lbl_style, btn_style, btn_style_selected,\
+    btn_style_red, btn_style_red_selected, btn_style_green, btn_style_green_selected,  \
     dsply_txt_style, WHITE, RED, GREEN
 
 
@@ -143,11 +144,11 @@ class AnalyzeVidWindow(QMainWindow):
         self.color_label.setGeometry(30, 200, 150, 20)
         self.color_label.setStyleSheet(lbl_style)
         self.button_green.setGeometry(40, 220, 40, 40)
-        self.button_green.clicked.connect(lambda: self.select_color(GREEN))
+        self.button_green.clicked.connect(self.select_color)
         self.button_green.setStyleSheet(btn_style_green)
         self.button_red.setGeometry(90, 220, 40, 40)
-        self.button_red.clicked.connect(lambda: self.select_color(RED))
-        self.button_red.setStyleSheet(btn_style_red)
+        self.button_red.clicked.connect(self.select_color)
+        self.button_red.setStyleSheet(btn_style_red_selected)
         self.button_ctrlz.setText("undo")
         self.button_ctrlz.setGeometry(10, 270, 150, 40)
         self.button_ctrlz.clicked.connect(self.remove_last_line)
@@ -159,19 +160,19 @@ class AnalyzeVidWindow(QMainWindow):
         self.speed_label.setStyleSheet(lbl_style)
         self.speed_x1.setText("x1")
         self.speed_x1.setGeometry(10, 340, 150, 20)
-        self.speed_x1.clicked.connect(lambda: self.set_speed(1))
-        self.speed_x1.setStyleSheet(btn_style)
+        self.speed_x1.clicked.connect(self.set_speed)
+        self.speed_x1.setStyleSheet(btn_style_selected)
         self.speed_x05.setText("x0.5")
         self.speed_x05.setGeometry(10, 360, 150, 20)
-        self.speed_x05.clicked.connect(lambda: self.set_speed(0.5))
+        self.speed_x05.clicked.connect(self.set_speed)
         self.speed_x05.setStyleSheet(btn_style)
         self.speed_x025.setText("x0.25")
         self.speed_x025.setGeometry(10, 380, 150, 20)
-        self.speed_x025.clicked.connect(lambda: self.set_speed(0.25))
+        self.speed_x025.clicked.connect(self.set_speed)
         self.speed_x025.setStyleSheet(btn_style)
         self.speed_x0125.setText("x0.125")
         self.speed_x0125.setGeometry(10, 400, 150, 20)
-        self.speed_x0125.clicked.connect(lambda: self.set_speed(0.125))
+        self.speed_x0125.clicked.connect(self.set_speed)
         self.speed_x0125.setStyleSheet(btn_style)
         self.button_play_pause.setText("Play")
         self.button_play_pause.setGeometry(10, 430, 150, 40)
@@ -293,7 +294,15 @@ class AnalyzeVidWindow(QMainWindow):
             self.update()
 
     def select_color(self, color):
-        self.drawing_color = QColor(color)
+        sender = self.sender()
+        if sender is self.button_green:
+            self.drawing_color = QColor(GREEN)
+            self.button_green.setStyleSheet(btn_style_green_selected)
+            self.button_red.setStyleSheet(btn_style_red)
+        if sender is self.button_red:
+            self.drawing_color = QColor(RED)
+            self.button_green.setStyleSheet(btn_style_green)
+            self.button_red.setStyleSheet(btn_style_red_selected)
 
     def play_pause_vid(self):
         if self.play_using_button:
@@ -315,9 +324,26 @@ class AnalyzeVidWindow(QMainWindow):
         self.load_current_frame()
         self.update()
 
-    def set_speed(self, speed):
+    def set_speed(self):
+        sender = self.sender()
+        if sender is self.speed_x1:
+            speed = 1
+        if sender is self.speed_x05:
+            speed = 0.5
+        if sender is self.speed_x025:
+            speed = 0.25
+        if sender is self.speed_x0125:
+            speed = 0.125
+        self.highlight_selected_speed(sender)
         refresh_rate = round(1000/(self.fps * speed))
         self.timer.start(refresh_rate)
+
+    def highlight_selected_speed(self, selected_btn):
+        self.speed_x1.setStyleSheet(btn_style)
+        self.speed_x05.setStyleSheet(btn_style)
+        self.speed_x025.setStyleSheet(btn_style)
+        self.speed_x0125.setStyleSheet(btn_style)
+        selected_btn.setStyleSheet(btn_style_selected)
 
     def timer_update(self):
         if self.play_using_button:

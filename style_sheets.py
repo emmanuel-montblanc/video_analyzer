@@ -25,6 +25,18 @@ btn_style = "QPushButton {" \
             "    border-color: " + WHITE + ";" \
             "    border-style: inset;}"
 
+btn_style_selected = "QPushButton {" \
+                     "   background-color: " + LESSER_BLACK_BACKGROUND + ";" \
+                     "   border-style: inset;" \
+                     "    border-width: 2px;" \
+                     "    border-radius: 10px;" \
+                     "    border-color: " + WHITE + ";" \
+                     "    font: 10pt JetBrains Mono;" \
+                     "    color: " + WHITE + ";" \
+                     "    min-width: 150px;" \
+                     "    padding: 0px;" \
+                     "}" \
+
 btn_style_red = "QPushButton {" \
             "   background-color: " + RED + ";" \
             "   border-style: outset;" \
@@ -40,6 +52,16 @@ btn_style_red = "QPushButton {" \
             "    border-color: " + WHITE + ";" \
             "    border-style: inset;}"
 
+btn_style_red_selected = "QPushButton {" \
+            "   background-color: " + RED + ";" \
+            "   border-style: inset;" \
+            "    border-width: 2px;" \
+            "    border-radius: 10px;" \
+            "    border-color: " + WHITE + ";" \
+            "    padding: 0px;" \
+            "}" \
+
+
 btn_style_green = "QPushButton {" \
             "   background-color: " + GREEN + ";" \
             "   border-style: outset;" \
@@ -54,6 +76,16 @@ btn_style_green = "QPushButton {" \
             "QPushButton:pressed {" \
             "    border-color: " + WHITE + ";" \
             "    border-style: inset;}"
+
+btn_style_green_selected = "QPushButton {" \
+            "   background-color: " + GREEN + ";" \
+            "   border-style: inset;" \
+            "    border-width: 2px;" \
+            "    border-radius: 10px;" \
+            "    border-color: " + WHITE + ";" \
+            "    padding: 0px;" \
+            "}" \
+
 
 lbl_style = "QLabel {" \
             "   font: 10pt JetBrains Mono;" \
