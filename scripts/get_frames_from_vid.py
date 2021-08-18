@@ -34,7 +34,7 @@ def get_frames(video_path: Path):
                 if (frame_count % 10) == 0:
                     print("creating frame nb " + str(frame_count))
 
-                name = working_folder / ("frame" + str(frame_count) + ".jpg")
+                name = str(working_folder / ("frame" + str(frame_count) + ".jpg"))
                 cv2.imwrite(name, frame)
 
                 frame_count += 1
