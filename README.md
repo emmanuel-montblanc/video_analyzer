@@ -1,4 +1,4 @@
-#Video analyzer
+# Video analyzer
 
 This project has as objective to allow you to download instagram clips, analyze them frame by frame, draw on it, and record your analysis, all in one program.
 
