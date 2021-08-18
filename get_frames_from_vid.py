@@ -1,9 +1,19 @@
+"""
+This modules allows you to extract the frames from a video, and store them in a folder as jpeg images
+"""
+
 import os
 from pathlib import Path
 import cv2
 
 
 def get_frames(video_path: Path):
+    """
+    Checks if the video wasnt loaded yet, if it wasn't, extract every frame from the video,
+    and save them in the folder videos/<name of the video>
+    :param video_path: the video we want to extract the frames from
+    :return: None
+    """
 
     _create_video_folder()
 
@@ -40,16 +50,35 @@ def get_frames(video_path: Path):
 
 
 def _create_video_folder():
+    """
+    creates the folder "videos" if it doesnt exists
+    :return: None
+    """
+
     video_folder = Path.cwd() / "videos"
     video_folder.mkdir(parents=True, exist_ok=True)
 
 
 def _clear_dir(directory):
+    """
+    Empties the directory "directory"
+    :param directory: the directory we want to empty
+    :return: None
+    """
+
     for file in os.listdir(directory):
         os.remove(directory / file)
 
 
 def _create_info_file(frame_count, fps, vid_name):
+    """
+    Create the info file, a .txt file with the nb of frames and the fps of the video
+    :param frame_count:  the number of frames of the video
+    :param fps: the fps of the video
+    :param vid_name: the name of the viode
+    :return: None
+    """
+
     info_file = './videos/' + vid_name + '/info.txt'
     with open(info_file, 'x') as file:
         file.writelines([str(frame_count), '\n' + str(fps)])

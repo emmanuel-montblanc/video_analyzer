@@ -1,136 +1,93 @@
-import shutil
-import time
-from datetime import datetime
+import sys
 
-from PyQt5.QtCore import Qt, QPoint, QTimer
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence
-from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QMessageBox
+from PyQt5.QtCore import Qt, QPoint, QTimer, QRect
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon, QColor, QFontDatabase
+from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEdit, QFrame, \
+    QApplication
 
 from recorder import Recorder
+from style_sheets import wndw_style, lbl_style, btn_style, btn_style_selected,\
+    btn_style_red, btn_style_red_selected, btn_style_green, btn_style_green_selected,  \
+    dsply_txt_style, WHITE, RED, GREEN
 
 
-# TODO: faire de screen recorder, audio recorder et merge audio screen un seul module recorder
-# TODO: organiser tout le bordel
-# TODO: fonction pour zoomer sur l'image
 # TODO: comparer deux video
+
 
 class AnalyzeVidWindow(QMainWindow):
 
     def __init__(self, master_window, video_name):
         super().__init__()
-        self.resize(1380, 770)
 
         self.master_window = master_window
-
         self.video_name = video_name
-        with open("./videos/" + video_name + "/info.txt") as file:
+
+        self.resize(1380, 770)
+        self.setWindowTitle(video_name)
+        self.setWindowIcon(QIcon("diamond_twist.png"))
+        self.setStyleSheet(wndw_style)
+
+        with open("./videos/" + self.video_name + "/info.txt") as file:
             self.nb_frames = int(file.readline().strip())
             self.fps = int(file.readline().strip())
 
         self.current_frame = 0
         self.pixmap = QPixmap("./videos/" + self.video_name + "/frame0.jpg")
-        if self.pixmap.width() >= 1920:
-            self.pixmap = self.pixmap.scaledToWidth(1280)
-        if self.pixmap.height() >= 1080:
-            self.pixmap = self.pixmap.scaledToHeight(720)
-        self.resize(self.pixmap.width() + 100, self.pixmap.height() + 50)
+        self.adapt_size()
 
+        self.fixed_width = self.pixmap.width()
+        self.vid_ratio = self.pixmap.width() / self.pixmap.height()
+
+        self.help_wdw = QMainWindow()
         self.recorder = Recorder(self.video_name)
-
-        self.now = datetime.now()
 
         self.drawing = False
         self.playing_using_mouse = False
         self.play_using_button = False
 
+        self.select_zooming = False
+        self.zooming = False
+        self.zoom_point = QPoint()
+        self.zooming_rect = QRect()
+
         self.lastPoint = QPoint()
         self.lines = []
         self.current_line = []
-        self.drawing_color = Qt.red
+        self.drawing_color = QColor(RED)
 
-        # Undo button
-        self.button_ctrlz = QPushButton(self)
-        self.button_ctrlz.setText("undo")
-        self.button_ctrlz.setGeometry(self.frameGeometry().width() - 85, 50, 80, 40)
-        self.button_ctrlz.clicked.connect(self.remove_last_line)
+        self.frame = QFrame(self)
+        self.frame.setGeometry(self.fixed_width, 20,
+                               self.frameGeometry().width(), self.frameGeometry().height())
+
+        # Help / change vid / record / zoom widgets
+        self.button_help = QPushButton(self.frame)
+        self.button_change_vid = QPushButton(self.frame)
+        self.button_record = QPushButton(self.frame)
+        self.button_zoom = QPushButton(self.frame)
+
+        # Drawing widgets
+        self.color_label = QLabel(self.frame)
+        self.button_green = QPushButton(self.frame)
+        self.button_red = QPushButton(self.frame)
+        self.button_ctrlz = QPushButton(self.frame)
+
+        # Playing widgets
+        self.speed_label = QLabel(self.frame)
+        self.speed_x1 = QPushButton(self.frame)
+        self.speed_x05 = QPushButton(self.frame)
+        self.speed_x025 = QPushButton(self.frame)
+        self.speed_x0125 = QPushButton(self.frame)
+        self.button_play_pause = QPushButton(self.frame)
+
+        self.init_widgets()
 
         # Undo shortcut
         self.ctrlz = QShortcut(QKeySequence('Ctrl+Z'), self)
         self.ctrlz.activated.connect(self.remove_last_line)
 
-        # Label for choosing colors
-        self.color_label = QLabel(self)
-        self.color_label.setText("drawing color:")
-        self.color_label.setGeometry(self.frameGeometry().width() - 80, 150, 80, 40)
-
-        # green color button
-        self.button_green = QPushButton(self)
-        self.button_green.setStyleSheet("background-color: green")
-        self.button_green.setGeometry(self.frameGeometry().width() - 85, 180, 40, 40)
-        self.button_green.clicked.connect(lambda: self.select_color(Qt.darkGreen))
-
-        # red color button
-        self.button_red = QPushButton(self)
-        self.button_red.setStyleSheet("background-color: red")
-        self.button_red.setGeometry(self.frameGeometry().width() - 42, 180, 40, 40)
-        self.button_red.clicked.connect(lambda: self.select_color(Qt.red))
-
-        # Label for choosing colors
-        self.speed_label = QLabel(self)
-        self.speed_label.setText("playing speed:")
-        self.speed_label.setGeometry(self.frameGeometry().width() - 80, 250, 80, 40)
-
-        # x1 speed button
-        self.speed_x1 = QPushButton(self)
-        self.speed_x1.setText("x1")
-        self.speed_x1.setGeometry(self.frameGeometry().width() - 85, 280, 80, 20)
-        self.speed_x1.clicked.connect(lambda: self.set_speed(1))
-
-        # x0.5 speed button
-        self.speed_x05 = QPushButton(self)
-        self.speed_x05.setText("x0.5")
-        self.speed_x05.setGeometry(self.frameGeometry().width() - 85, 300, 80, 20)
-        self.speed_x05.clicked.connect(lambda: self.set_speed(0.5))
-
-        # x0.25 speed button
-        self.speed_x025 = QPushButton(self)
-        self.speed_x025.setText("x0.25")
-        self.speed_x025.setGeometry(self.frameGeometry().width() - 85, 320, 80, 20)
-        self.speed_x025.clicked.connect(lambda: self.set_speed(0.25))
-
-        # x0.125 speed button
-        self.speed_x0125 = QPushButton(self)
-        self.speed_x0125.setText("x0.125")
-        self.speed_x0125.setGeometry(self.frameGeometry().width() - 85, 340, 80, 20)
-        self.speed_x0125.clicked.connect(lambda: self.set_speed(0.125))
-
-        # Play button
-        self.button_play = QPushButton(self)
-        self.button_play.setText("Play")
-        self.button_play.setGeometry(self.frameGeometry().width() - 85, 380, 40, 40)
-        self.button_play.clicked.connect(self.play_vid)
-
-        # Pause button
-        self.button_pause = QPushButton(self)
-        self.button_pause.setText("Pause")
-        self.button_pause.setGeometry(self.frameGeometry().width() - 42, 380, 40, 40)
-        self.button_pause.clicked.connect(self.pause_vid)
-
-        # Record button
-        self.button_record = QPushButton(self)
-        self.button_record.setText("start recording")
-        self.button_record.setGeometry(self.frameGeometry().width() - 85, 450, 80, 40)
-        self.button_record.clicked.connect(self.record_video)
-
-        # change video button
-        self.button_change_vid = QPushButton(self)
-        self.button_change_vid.setText("change video")
-        self.button_change_vid.setGeometry(self.frameGeometry().width() - 85, 500, 80, 40)
-        self.button_change_vid.clicked.connect(self.change_video)
-
         # Play pause shortcut
         self.space_bar = QShortcut(QKeySequence(Qt.Key_Space), self)
-        self.space_bar.activated.connect(self.space_bar_pressed)
+        self.space_bar.activated.connect(self.play_pause_vid)
 
         # Next frame shortcut
         self.right_key = QShortcut(QKeySequence(Qt.Key_Right), self)
@@ -147,61 +104,165 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.show()
 
+    def adapt_size(self):
+        screen_size = QApplication.primaryScreen().geometry()
+        if self.pixmap.width() >= screen_size.width() - 200:
+            self.pixmap = self.pixmap.scaledToWidth(screen_size.width() - 200)
+        if self.pixmap.height() >= screen_size.height() - 120:
+            self.pixmap = self.pixmap.scaledToHeight(screen_size.height() - 120)
+        if self.pixmap.height() < 480:
+            self.pixmap = self.pixmap.scaledToHeight(480)
+        self.resize(self.pixmap.width() + 170, self.pixmap.height() + 50)
+
+    def init_widgets(self):
+        # Button help
+        self.button_help.setText("help")
+        self.button_help.setGeometry(10, 0, 150, 40)
+        self.button_help.clicked.connect(self.help)
+        self.button_help.setStyleSheet(btn_style)
+
+        # Button change video
+        self.button_change_vid.setText("change video")
+        self.button_change_vid.setGeometry(10, 50, 150, 40)
+        self.button_change_vid.clicked.connect(self.change_video)
+        self.button_change_vid.setStyleSheet(btn_style)
+
+        # Button record
+        self.button_record.setText("start recording")
+        self.button_record.setGeometry(10, 100, 150, 40)
+        self.button_record.clicked.connect(self.record_video)
+        self.button_record.setStyleSheet(btn_style)
+
+        # Button zoom
+        self.button_zoom.setText("zoom")
+        self.button_zoom.setGeometry(10, 150, 150, 40)
+        self.button_zoom.clicked.connect(self.zoom_image)
+        self.button_zoom.setStyleSheet(btn_style)
+
+        # Drawing widgets
+        self.color_label.setText("drawing color:")
+        self.color_label.setGeometry(30, 200, 150, 20)
+        self.color_label.setStyleSheet(lbl_style)
+        self.button_green.setGeometry(40, 220, 40, 40)
+        self.button_green.clicked.connect(self.select_color)
+        self.button_green.setStyleSheet(btn_style_green)
+        self.button_red.setGeometry(90, 220, 40, 40)
+        self.button_red.clicked.connect(self.select_color)
+        self.button_red.setStyleSheet(btn_style_red_selected)
+        self.button_ctrlz.setText("undo")
+        self.button_ctrlz.setGeometry(10, 270, 150, 40)
+        self.button_ctrlz.clicked.connect(self.remove_last_line)
+        self.button_ctrlz.setStyleSheet(btn_style)
+
+        # Playing widgets
+        self.speed_label.setText("playing speed:")
+        self.speed_label.setGeometry(30, 320, 150, 20)
+        self.speed_label.setStyleSheet(lbl_style)
+        self.speed_x1.setText("x1")
+        self.speed_x1.setGeometry(10, 340, 150, 20)
+        self.speed_x1.clicked.connect(self.set_speed)
+        self.speed_x1.setStyleSheet(btn_style_selected)
+        self.speed_x05.setText("x0.5")
+        self.speed_x05.setGeometry(10, 360, 150, 20)
+        self.speed_x05.clicked.connect(self.set_speed)
+        self.speed_x05.setStyleSheet(btn_style)
+        self.speed_x025.setText("x0.25")
+        self.speed_x025.setGeometry(10, 380, 150, 20)
+        self.speed_x025.clicked.connect(self.set_speed)
+        self.speed_x025.setStyleSheet(btn_style)
+        self.speed_x0125.setText("x0.125")
+        self.speed_x0125.setGeometry(10, 400, 150, 20)
+        self.speed_x0125.clicked.connect(self.set_speed)
+        self.speed_x0125.setStyleSheet(btn_style)
+        self.button_play_pause.setText("Play")
+        self.button_play_pause.setGeometry(10, 430, 150, 40)
+        self.button_play_pause.clicked.connect(self.play_pause_vid)
+        self.button_play_pause.setStyleSheet(btn_style)
+
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
 
-        # Draw the video
         painter.drawPixmap(self.pixmap.rect(), self.pixmap)
+        self.draw_progress_bar(painter)
+        self.draw_lines(painter)
+        self.draw_zooming_rect(painter)
 
-        # Draw the progress bar of the video
-        painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
-        painter.drawLine(QPoint(0, self.frameGeometry().height() - 60),
-                         QPoint(self.pixmap.width(), self.frameGeometry().height()-60))
+        painter.end()
 
-        # Draw the cursor on the progress bar
-        painter.setPen(QPen(Qt.blue, 3, Qt.SolidLine))
-        x_pos = int(self.current_frame * self.pixmap.width() / self.nb_frames)
-        painter.drawLine(QPoint(x_pos, self.frameGeometry().height()),
-                         QPoint(x_pos, self.frameGeometry().height() - 80))
+    def draw_zooming_rect(self, painter):
+        if self.select_zooming and self.zoom_point != QPoint():
+            painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
+            painter.drawRect(self.zooming_rect)
 
+    def draw_lines(self, painter):
         # Draw the finished lines
         for line_group in self.lines:
             painter.setPen(QPen(line_group[0][2], 3, Qt.SolidLine))
             for line in line_group:
                 painter.drawLine(line[0], line[1])
-
         # Draw the line we are currently drawing
         painter.setPen(QPen(self.drawing_color, 3, Qt.SolidLine))
         for line in self.current_line:
             painter.drawLine(line[0], line[1])
-        painter.end()
+
+    def draw_progress_bar(self, painter):
+        # Draw the progress bar
+        painter.setPen(QPen(QColor(WHITE), 3, Qt.SolidLine))
+        painter.drawLine(QPoint(0, self.frameGeometry().height() - 60),
+                         QPoint(self.pixmap.width(), self.frameGeometry().height() - 60))
+
+        # Draw the cursor on the progress bar
+        painter.setPen(QPen(QColor(WHITE), 3, Qt.SolidLine))
+        x_pos = int(self.current_frame * self.pixmap.width() / self.nb_frames)
+        painter.drawLine(QPoint(x_pos, self.frameGeometry().height()),
+                         QPoint(x_pos, self.frameGeometry().height() - 80))
 
     def mouseMoveEvent(self, event):
         if event.buttons() and Qt.LeftButton and self.drawing:
             if event.x() < self.pixmap.width() and event.y() < self.pixmap.height():
                 self.current_line.append((self.lastPoint, event.pos(), self.drawing_color))
                 self.lastPoint = event.pos()
-                self.update()
+
+        if event.buttons() and Qt.LeftButton and self.select_zooming:
+            self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
+                                      event.x(), event.x()/self.vid_ratio)
 
         if event.buttons() and Qt.RightButton and self.playing_using_mouse:
             self.update_current_frame(event)
+        self.update()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.drawing = True
-            self.lastPoint = event.pos()
+            if self.select_zooming:
+                if self.zoom_point == QPoint():
+                    self.zoom_point = event.pos()
+            else:
+                self.drawing = True
+                self.lastPoint = event.pos()
 
         if event.button() == Qt.RightButton:
-            self.update_current_frame(event)
-            self.playing_using_mouse = True
+            if self.select_zooming:
+                self.unzoom()
+            else:
+                self.update_current_frame(event)
+                self.playing_using_mouse = True
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton:
-            if self.current_line:
-                self.lines.append(self.current_line)
-            self.current_line = []
-            self.drawing = False
+            if self.select_zooming:
+                self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
+                                          event.x(), event.x() / self.vid_ratio)
+                self.zoom_point = QPoint()
+                self.select_zooming = False
+                self.zooming = True
+                self.load_current_frame()
+                self.update()
+            else:
+                if self.current_line:
+                    self.lines.append(self.current_line)
+                self.current_line = []
+                self.drawing = False
 
         if event.button() == Qt.RightButton:
             self.playing_using_mouse = False
@@ -212,7 +273,6 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.check_current_frame()
         self.load_current_frame()
-        self.update()
 
     def check_current_frame(self):
         if self.current_frame > self.nb_frames:
@@ -222,7 +282,11 @@ class AnalyzeVidWindow(QMainWindow):
 
     def load_current_frame(self):
         self.pixmap = QPixmap("./videos/" + self.video_name + "/frame" + str(self.current_frame) + ".jpg")
-        self.pixmap = self.pixmap.scaledToWidth(my_round(self.frameGeometry().width() - 90))
+        self.pixmap = self.pixmap.scaledToWidth(self.fixed_width)
+
+        if self.zooming:
+            copy = self.pixmap.copy(self.zooming_rect)
+            self.pixmap = copy.scaledToWidth(self.fixed_width)
 
     def remove_last_line(self):
         if self.lines:
@@ -230,18 +294,22 @@ class AnalyzeVidWindow(QMainWindow):
             self.update()
 
     def select_color(self, color):
-        self.drawing_color = color
+        sender = self.sender()
+        if sender is self.button_green:
+            self.drawing_color = QColor(GREEN)
+            self.button_green.setStyleSheet(btn_style_green_selected)
+            self.button_red.setStyleSheet(btn_style_red)
+        if sender is self.button_red:
+            self.drawing_color = QColor(RED)
+            self.button_green.setStyleSheet(btn_style_green)
+            self.button_red.setStyleSheet(btn_style_red_selected)
 
-    def play_vid(self):
-        self.play_using_button = True
-
-    def pause_vid(self):
-        self.play_using_button = False
-
-    def space_bar_pressed(self):
+    def play_pause_vid(self):
         if self.play_using_button:
+            self.button_play_pause.setText("play")
             self.play_using_button = False
         else:
+            self.button_play_pause.setText("pause")
             self.play_using_button = True
 
     def next_frame(self):
@@ -256,9 +324,26 @@ class AnalyzeVidWindow(QMainWindow):
         self.load_current_frame()
         self.update()
 
-    def set_speed(self, speed):
+    def set_speed(self):
+        sender = self.sender()
+        if sender is self.speed_x1:
+            speed = 1
+        if sender is self.speed_x05:
+            speed = 0.5
+        if sender is self.speed_x025:
+            speed = 0.25
+        if sender is self.speed_x0125:
+            speed = 0.125
+        self.highlight_selected_speed(sender)
         refresh_rate = round(1000/(self.fps * speed))
         self.timer.start(refresh_rate)
+
+    def highlight_selected_speed(self, selected_btn):
+        self.speed_x1.setStyleSheet(btn_style)
+        self.speed_x05.setStyleSheet(btn_style)
+        self.speed_x025.setStyleSheet(btn_style)
+        self.speed_x0125.setStyleSheet(btn_style)
+        selected_btn.setStyleSheet(btn_style_selected)
 
     def timer_update(self):
         if self.play_using_button:
@@ -277,10 +362,51 @@ class AnalyzeVidWindow(QMainWindow):
         if self.button_record.text() == "stop recording":
             self.record_video()
 
+        # return to the select video windows
         self.master_window.show()
         self.close()
 
+    def zoom_image(self):
+        if not self.zooming:
+            self.select_zooming = True
+            self.button_zoom.setText("Unzoom")
+            self.button_zoom.clicked.connect(self.unzoom)
 
-def my_round(x, base=5):
-    return base * round(x/base)
+    def unzoom(self):
+        self.button_zoom.setText("zoom")
+        self.zooming = False
+        self.select_zooming = False
+        self.zoom_point = QPoint()
 
+        self.button_zoom.clicked.connect(self.zoom_image)
+
+        self.load_current_frame()
+        self.update()
+
+    def help(self):
+        self.help_wdw = HelpWindow()
+        self.help_wdw.show()
+
+
+class HelpWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        screen_size = QApplication.primaryScreen().geometry()
+        self.resize(screen_size.width()*0.8, screen_size.height()*0.8)
+        self.setWindowTitle("Help")
+
+        self.displayer = QTextEdit(self)
+        self.displayer.setGeometry(0, 0, screen_size.width()*0.8, screen_size.height()*0.8)
+        self.displayer.setStyleSheet(dsply_txt_style)
+
+        text = open("help.txt").read()
+        self.displayer.setPlainText(text)
+        self.displayer.setReadOnly(True)
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    QFontDatabase.addApplicationFont("JetBrainsMono-Regular.ttf")
+    # print(QFontDatabase().families())
+    main_window = AnalyzeVidWindow("", "VID_20201026_190145")
+    sys.exit(app.exec_())
