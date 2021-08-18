@@ -391,11 +391,12 @@ class AnalyzeVidWindow(QMainWindow):
 class HelpWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.resize(720, 480)
+        screen_size = QApplication.primaryScreen().geometry()
+        self.resize(screen_size.width()*0.8, screen_size.height()*0.8)
         self.setWindowTitle("Help")
 
         self.displayer = QTextEdit(self)
-        self.displayer.setGeometry(0, 0, 720, 480)
+        self.displayer.setGeometry(0, 0, screen_size.width()*0.8, screen_size.height()*0.8)
         self.displayer.setStyleSheet(dsply_txt_style)
 
         text = open("help.txt").read()
