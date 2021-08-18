@@ -20,6 +20,8 @@ class SelectVidWindow(QMainWindow):
         self.setWindowIcon(QIcon("resources/diamond_twist.png"))
         self.setStyleSheet(wndw_style)
 
+        self.analyze_window = QMainWindow()
+
         self.video_path = Path()
 
         # Frame for the 2 main buttons
@@ -110,7 +112,7 @@ class SelectVidWindow(QMainWindow):
 
     def start_analyze(self):
         get_frames(self.video_path)
-        AnalyzeVidWindow(self, self.video_path.stem)
+        self.analyze_window = AnalyzeVidWindow(self, self.video_path.stem)
         self.hide()
 
 
