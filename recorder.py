@@ -14,6 +14,8 @@ class Recorder:
     def __init__(self, video_name):
         self.video_name = video_name
 
+        _create_temp_folder()
+
         self.audio_recorder = AudioRecorder()
         self.screen_recorder = ScreenRecorder()
 
@@ -129,6 +131,21 @@ class ScreenRecorder:
         self.recording_thread.recording = False
 
 
+def _create_temp_folder():
+    """
+    creates the folder "temp" if it doesnt exists
+    :return: None
+    """
+
+    temp_folder = Path.cwd() / "temp"
+    temp_folder.mkdir(parents=True, exist_ok=True)
+
+
 def _create_records_folder():
+    """
+    creates the folder "records" if it doesnt exists
+    :return: None
+    """
+
     records_folder = Path.cwd() / "records"
     records_folder.mkdir(parents=True, exist_ok=True)
