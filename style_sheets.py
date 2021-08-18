@@ -13,9 +13,9 @@ btn_style = "QPushButton {" \
             "    border-width: 2px;" \
             "    border-radius: 10px;" \
             "    border-color: black;" \
-            "    font: 12px;" \
+            "   font: 10pt JetBrains Mono;" \
             "    color: " + WHITE + ";" \
-            "    min-width: 40px;" \
+            "    min-width: 150px;" \
             "    padding: 0px;" \
             "}" \
             "QPushButton:hover {" \
@@ -56,10 +56,15 @@ btn_style_green = "QPushButton {" \
             "    border-style: inset;}"
 
 lbl_style = "QLabel {" \
-            "   font: 12px;" \
+            "   font: 10pt JetBrains Mono;" \
             "   color: " + WHITE + ";}"
 
 entry_style = "QLineEdit {" \
-            "   font: 12px;" \
+            "   font: 10pt JetBrains Mono;" \
             "   color: " + WHITE + ";}"
+
+dsply_txt_style = "QTextEdit {" \
+                  "   background-color: " + BLACK_BACKGROUND + ";"\
+                  "   font: 12pt JetBrains Mono;" \
+                  "   color: " + WHITE + ";}"
 

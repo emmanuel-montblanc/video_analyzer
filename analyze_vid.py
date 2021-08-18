@@ -1,12 +1,12 @@
 import sys
 
 from PyQt5.QtCore import Qt, QPoint, QTimer, QRect
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon, QFont, QColor
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon, QFont, QColor, QFontDatabase
 from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEdit, QFrame, \
     QApplication
 
 from recorder import Recorder
-from style_sheets import wndw_style, btn_style, btn_style_red, btn_style_green, lbl_style, WHITE
+from style_sheets import wndw_style, btn_style, btn_style_red, btn_style_green, lbl_style, dsply_txt_style, WHITE
 
 # TODO: rendre le truc un peu moins moche
 # TODO: comparer deux video
@@ -35,7 +35,7 @@ class AnalyzeVidWindow(QMainWindow):
             self.pixmap = self.pixmap.scaledToWidth(1280)
         if self.pixmap.height() >= 1080:
             self.pixmap = self.pixmap.scaledToHeight(720)
-        self.resize(self.pixmap.width() + 120, self.pixmap.height() + 50)
+        self.resize(self.pixmap.width() + 170, self.pixmap.height() + 50)
 
         self.fixed_width = self.pixmap.width()
         self.vid_ratio = self.pixmap.width() / self.pixmap.height()
@@ -109,65 +109,65 @@ class AnalyzeVidWindow(QMainWindow):
     def init_widgets(self):
         # Button help
         self.button_help.setText("help")
-        self.button_help.setGeometry(10, 0, 100, 40)
+        self.button_help.setGeometry(10, 0, 150, 40)
         self.button_help.clicked.connect(self.help)
         self.button_help.setStyleSheet(btn_style)
 
         # Button change video
         self.button_change_vid.setText("change video")
-        self.button_change_vid.setGeometry(10, 50, 100, 40)
+        self.button_change_vid.setGeometry(10, 50, 150, 40)
         self.button_change_vid.clicked.connect(self.change_video)
         self.button_change_vid.setStyleSheet(btn_style)
 
         # Button record
         self.button_record.setText("start recording")
-        self.button_record.setGeometry(10, 100, 100, 40)
+        self.button_record.setGeometry(10, 100, 150, 40)
         self.button_record.clicked.connect(self.record_video)
         self.button_record.setStyleSheet(btn_style)
 
         # Button zoom
         self.button_zoom.setText("zoom")
-        self.button_zoom.setGeometry(10, 150, 100, 40)
+        self.button_zoom.setGeometry(10, 150, 150, 40)
         self.button_zoom.clicked.connect(self.zoom_image)
         self.button_zoom.setStyleSheet(btn_style)
 
         # Drawing widgets
         self.color_label.setText("drawing color:")
-        self.color_label.setGeometry(20, 200, 100, 20)
+        self.color_label.setGeometry(30, 200, 150, 20)
         self.color_label.setStyleSheet(lbl_style)
-        self.button_green.setGeometry(15, 220, 40, 40)
+        self.button_green.setGeometry(40, 220, 40, 40)
         self.button_green.clicked.connect(lambda: self.select_color(Qt.darkGreen))
         self.button_green.setStyleSheet(btn_style_green)
-        self.button_red.setGeometry(60, 220, 40, 40)
+        self.button_red.setGeometry(90, 220, 40, 40)
         self.button_red.clicked.connect(lambda: self.select_color(Qt.red))
         self.button_red.setStyleSheet(btn_style_red)
         self.button_ctrlz.setText("undo")
-        self.button_ctrlz.setGeometry(10, 270, 100, 40)
+        self.button_ctrlz.setGeometry(10, 270, 150, 40)
         self.button_ctrlz.clicked.connect(self.remove_last_line)
         self.button_ctrlz.setStyleSheet(btn_style)
 
         # Playing widgets
         self.speed_label.setText("playing speed:")
-        self.speed_label.setGeometry(20, 320, 100, 20)
+        self.speed_label.setGeometry(30, 320, 150, 20)
         self.speed_label.setStyleSheet(lbl_style)
         self.speed_x1.setText("x1")
-        self.speed_x1.setGeometry(10, 340, 100, 20)
+        self.speed_x1.setGeometry(10, 340, 150, 20)
         self.speed_x1.clicked.connect(lambda: self.set_speed(1))
         self.speed_x1.setStyleSheet(btn_style)
         self.speed_x05.setText("x0.5")
-        self.speed_x05.setGeometry(10, 360, 100, 20)
+        self.speed_x05.setGeometry(10, 360, 150, 20)
         self.speed_x05.clicked.connect(lambda: self.set_speed(0.5))
         self.speed_x05.setStyleSheet(btn_style)
         self.speed_x025.setText("x0.25")
-        self.speed_x025.setGeometry(10, 380, 100, 20)
+        self.speed_x025.setGeometry(10, 380, 150, 20)
         self.speed_x025.clicked.connect(lambda: self.set_speed(0.25))
         self.speed_x025.setStyleSheet(btn_style)
         self.speed_x0125.setText("x0.125")
-        self.speed_x0125.setGeometry(10, 400, 100, 20)
+        self.speed_x0125.setGeometry(10, 400, 150, 20)
         self.speed_x0125.clicked.connect(lambda: self.set_speed(0.125))
         self.speed_x0125.setStyleSheet(btn_style)
         self.button_play_pause.setText("Play")
-        self.button_play_pause.setGeometry(10, 430, 100, 40)
+        self.button_play_pause.setGeometry(10, 430, 150, 40)
         self.button_play_pause.clicked.connect(self.play_pause_vid)
         self.button_play_pause.setStyleSheet(btn_style)
 
@@ -312,7 +312,6 @@ class AnalyzeVidWindow(QMainWindow):
         refresh_rate = round(1000/(self.fps * speed))
         self.timer.start(refresh_rate)
 
-
     def timer_update(self):
         if self.play_using_button:
             self.next_frame()
@@ -364,7 +363,7 @@ class HelpWindow(QMainWindow):
 
         self.displayer = QTextEdit(self)
         self.displayer.setGeometry(0, 0, 720, 480)
-        self.displayer.setCurrentFont(QFont('Consolas, 12'))
+        self.displayer.setStyleSheet(dsply_txt_style)
 
         text = open("help.txt").read()
         self.displayer.setPlainText(text)
@@ -373,5 +372,7 @@ class HelpWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    QFontDatabase.addApplicationFont("JetBrainsMono-Regular.ttf")
+    # print(QFontDatabase().families())
     main_window = AnalyzeVidWindow("", "VID_20201026_190145")
     sys.exit(app.exec_())

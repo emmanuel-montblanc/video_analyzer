@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 import requests
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFontDatabase
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog, QLabel, QLineEdit, \
     QMessageBox, QFrame
 
@@ -28,16 +28,16 @@ class SelectVidWindow(QMainWindow):
 
         # Select local video button
         self.local_vid_btn = QPushButton(self.frame_main_buttons)
-        self.local_vid_btn.setText("Analyze local video")
-        self.local_vid_btn.setGeometry(150, round(self.frameGeometry().height()/2), 150, 40)
+        self.local_vid_btn.setText("Analyze local\n video")
+        self.local_vid_btn.setGeometry(150, round(self.frameGeometry().height()/2), 150, 50)
         self.local_vid_btn.clicked.connect(self.select_local_vid)
         self.local_vid_btn.setStyleSheet(btn_style)
 
         # Select instagram video button
         self.insta_vid_btn = QPushButton(self.frame_main_buttons)
-        self.insta_vid_btn.setText("Analyze instagram video")
+        self.insta_vid_btn.setText("Analyze instagram\n video")
         self.insta_vid_btn.setGeometry(self.frameGeometry().width() - 300,
-                                       round(self.frameGeometry().height()/2), 150, 40)
+                                       round(self.frameGeometry().height()/2), 150, 50)
         self.insta_vid_btn.clicked.connect(self.select_insta_vid)
         self.insta_vid_btn.setStyleSheet(btn_style)
 
@@ -116,5 +116,6 @@ class SelectVidWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    QFontDatabase.addApplicationFont("JetBrainsMono-Regular.ttf")
     main_window = SelectVidWindow()
     sys.exit(app.exec_())

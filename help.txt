@@ -21,5 +21,7 @@ You can delete the last line that you draw by using either the button "undo" or 
 Playing
 =======
 To play the video, you have two options:
+
  - Play with a certain speed: Select the speed by clicking on the corresponding button, and then play and pause the video by either clicking on the play/pause button or by pressing your spacebar. (note: the speed is not really accurate, the x1 speed is much slower than it should be cause it needs to load image by image which is slow)
+
  - Play the video by using your mouse: you can play the video by draging your mouse and right clicking on the video. If you right click on the left of the video, it will correspond to the start of the video, if you right click on the right of the video, it will correspond to the end of the video
