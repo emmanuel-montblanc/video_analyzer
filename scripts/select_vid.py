@@ -58,22 +58,22 @@ class SelectVidWindow(QMainWindow):
         # Download button
         self.download_btn = QPushButton(self.frame_select_insta)
         self.download_btn.setText("Ok")
-        self.download_btn.setGeometry(210,
-                                    round(self.frameGeometry().height()/2) + 45, 100, 40)
+        self.download_btn.setGeometry(185,
+                                    round(self.frameGeometry().height()/2) + 45, 150, 40)
         self.download_btn.clicked.connect(self.download_vid)
         self.download_btn.setStyleSheet(btn_style)
 
         # Return button
         self.return_btn = QPushButton(self.frame_select_insta)
         self.return_btn.setText("return")
-        self.return_btn.setGeometry(410,
-                                    round(self.frameGeometry().height()/2) + 45, 100, 40)
+        self.return_btn.setGeometry(385,
+                                    round(self.frameGeometry().height()/2) + 45, 150, 40)
         self.return_btn.clicked.connect(self.return_home_page)
         self.return_btn.setStyleSheet(btn_style)
 
         # url entry
         self.url_entry = QLineEdit(self.frame_select_insta)
-        self.url_entry.setGeometry(210, round(self.frameGeometry().height()/2), 300, 40)
+        self.url_entry.setGeometry(185, round(self.frameGeometry().height()/2), 350, 40)
         self.url_entry.setStyleSheet(entry_style)
         self.frame_select_insta.hide()
 
