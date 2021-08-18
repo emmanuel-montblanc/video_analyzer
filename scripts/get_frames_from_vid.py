@@ -55,7 +55,7 @@ def _create_video_folder():
     :return: None
     """
 
-    video_folder = Path.cwd() / "videos"
+    video_folder = Path.cwd().parent / "videos"
     video_folder.mkdir(parents=True, exist_ok=True)
 
 
