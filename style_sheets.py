@@ -1,7 +1,7 @@
 BLACK_BACKGROUND = "#2b2b2b"
 LESSER_BLACK_BACKGROUND = "#3c3f41"
 WHITE = "#a9b7c6"
-DARK_GREEN = "#499c54"
+GREEN = "#3aff22"
 RED = "red"
 
 
@@ -41,7 +41,7 @@ btn_style_red = "QPushButton {" \
             "    border-style: inset;}"
 
 btn_style_green = "QPushButton {" \
-            "   background-color: " + DARK_GREEN + ";" \
+            "   background-color: " + GREEN + ";" \
             "   border-style: outset;" \
             "    border-width: 2px;" \
             "    border-radius: 10px;" \

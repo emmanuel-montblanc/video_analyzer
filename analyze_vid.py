@@ -1,12 +1,14 @@
 import sys
 
 from PyQt5.QtCore import Qt, QPoint, QTimer, QRect
-from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon, QFont, QColor, QFontDatabase
+from PyQt5.QtGui import QPixmap, QPainter, QPen, QKeySequence, QIcon, QColor, QFontDatabase
 from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEdit, QFrame, \
     QApplication
 
 from recorder import Recorder
-from style_sheets import wndw_style, btn_style, btn_style_red, btn_style_green, lbl_style, dsply_txt_style, WHITE
+from style_sheets import wndw_style, btn_style, btn_style_red, btn_style_green, lbl_style, \
+    dsply_txt_style, WHITE, RED, GREEN
+
 
 # TODO: comparer deux video
 
@@ -50,7 +52,7 @@ class AnalyzeVidWindow(QMainWindow):
         self.lastPoint = QPoint()
         self.lines = []
         self.current_line = []
-        self.drawing_color = Qt.red
+        self.drawing_color = QColor(RED)
 
         self.frame = QFrame(self)
         self.frame.setGeometry(self.fixed_width, 20,
@@ -141,10 +143,10 @@ class AnalyzeVidWindow(QMainWindow):
         self.color_label.setGeometry(30, 200, 150, 20)
         self.color_label.setStyleSheet(lbl_style)
         self.button_green.setGeometry(40, 220, 40, 40)
-        self.button_green.clicked.connect(lambda: self.select_color(Qt.darkGreen))
+        self.button_green.clicked.connect(lambda: self.select_color(GREEN))
         self.button_green.setStyleSheet(btn_style_green)
         self.button_red.setGeometry(90, 220, 40, 40)
-        self.button_red.clicked.connect(lambda: self.select_color(Qt.red))
+        self.button_red.clicked.connect(lambda: self.select_color(RED))
         self.button_red.setStyleSheet(btn_style_red)
         self.button_ctrlz.setText("undo")
         self.button_ctrlz.setGeometry(10, 270, 150, 40)
@@ -291,7 +293,7 @@ class AnalyzeVidWindow(QMainWindow):
             self.update()
 
     def select_color(self, color):
-        self.drawing_color = color
+        self.drawing_color = QColor(color)
 
     def play_pause_vid(self):
         if self.play_using_button:
