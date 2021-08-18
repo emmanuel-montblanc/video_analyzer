@@ -17,7 +17,7 @@ class SelectVidWindow(QMainWindow):
         super().__init__()
         self.resize(720, 480)
         self.setWindowTitle("Video analyzer")
-        self.setWindowIcon(QIcon("diamond_twist.png"))
+        self.setWindowIcon(QIcon("resources/diamond_twist.png"))
         self.setStyleSheet(wndw_style)
 
         self.video_path = Path()
@@ -116,6 +116,6 @@ class SelectVidWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    QFontDatabase.addApplicationFont("JetBrainsMono-Regular.ttf")
+    QFontDatabase.addApplicationFont("resources/JetBrainsMono-Regular.ttf")
     main_window = SelectVidWindow()
     sys.exit(app.exec_())

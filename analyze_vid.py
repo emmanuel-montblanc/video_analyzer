@@ -24,7 +24,7 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.resize(1380, 770)
         self.setWindowTitle(video_name)
-        self.setWindowIcon(QIcon("diamond_twist.png"))
+        self.setWindowIcon(QIcon("resources/diamond_twist.png"))
         self.setStyleSheet(wndw_style)
 
         with open("./videos/" + self.video_name + "/info.txt") as file:
@@ -399,14 +399,14 @@ class HelpWindow(QMainWindow):
         self.displayer.setGeometry(0, 0, screen_size.width()*0.8, screen_size.height()*0.8)
         self.displayer.setStyleSheet(dsply_txt_style)
 
-        text = open("help.txt").read()
+        text = open("resources/help.txt").read()
         self.displayer.setPlainText(text)
         self.displayer.setReadOnly(True)
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    QFontDatabase.addApplicationFont("JetBrainsMono-Regular.ttf")
+    QFontDatabase.addApplicationFont("resources/JetBrainsMono-Regular.ttf")
     # print(QFontDatabase().families())
     main_window = AnalyzeVidWindow("", "VID_20201026_190145")
     sys.exit(app.exec_())
