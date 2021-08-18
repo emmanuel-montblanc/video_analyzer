@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog,
 from analyze_vid import AnalyzeVidWindow
 from download_vid import download_from_instagram
 from get_frames_from_vid import ExtractFramesThread
-from style_sheets import wndw_style, btn_style, lbl_style, lbl_state_style, entry_style
+from style_sheets import wndw_style, btn_style, lbl_style, lbl_state_style, entry_style, progress_bar_style
 
 
 # TODO: add a loading bar, when extracting the frames
@@ -101,6 +101,7 @@ class SelectVidWindow(QMainWindow):
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setGeometry(100, self.geometry().height() - 100,
                                       self.geometry().width() - 200, 50)
+        self.progress_bar.setStyleSheet(progress_bar_style)
         self.progress_bar.hide()
 
         self.show()

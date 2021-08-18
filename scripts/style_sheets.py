@@ -105,3 +105,15 @@ dsply_txt_style = "QTextEdit {" \
                   "   font: 12pt JetBrains Mono;" \
                   "   color: " + WHITE + ";}"
 
+progress_bar_style = "QProgressBar {" \
+                     "background-color: " + LESSER_BLACK_BACKGROUND + ";"\
+                     "border-radius: 15px;" \
+                     "color: " + BLACK_BACKGROUND + ";" \
+                     "font: 12pt JetBrains Mono;" \
+                     "qproperty-alignment: AlignCenter;" \
+                     "}" \
+                     "QProgressBar::chunk " \
+                     "{" \
+                     "background-color: " + WHITE + ";" \
+                     "border-radius :15px;}"
+
