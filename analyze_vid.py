@@ -8,7 +8,6 @@ from PyQt5.QtWidgets import QMainWindow, QShortcut, QPushButton, QLabel, QTextEd
 from recorder import Recorder
 from style_sheets import wndw_style, btn_style, btn_style_red, btn_style_green, lbl_style, dsply_txt_style, WHITE
 
-# TODO: rendre le truc un peu moins moche
 # TODO: comparer deux video
 
 
@@ -31,11 +30,7 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.current_frame = 0
         self.pixmap = QPixmap("./videos/" + self.video_name + "/frame0.jpg")
-        if self.pixmap.width() >= 1920:
-            self.pixmap = self.pixmap.scaledToWidth(1280)
-        if self.pixmap.height() >= 1080:
-            self.pixmap = self.pixmap.scaledToHeight(720)
-        self.resize(self.pixmap.width() + 170, self.pixmap.height() + 50)
+        self.adapt_size()
 
         self.fixed_width = self.pixmap.width()
         self.vid_ratio = self.pixmap.width() / self.pixmap.height()
@@ -105,6 +100,16 @@ class AnalyzeVidWindow(QMainWindow):
         self.timer.start(round(1000/self.fps))
 
         self.show()
+
+    def adapt_size(self):
+        screen_size = QApplication.primaryScreen().geometry()
+        if self.pixmap.width() >= screen_size.width() - 200:
+            self.pixmap = self.pixmap.scaledToWidth(screen_size.width() - 200)
+        if self.pixmap.height() >= screen_size.height() - 120:
+            self.pixmap = self.pixmap.scaledToHeight(screen_size.height() - 120)
+        if self.pixmap.height() < 480:
+            self.pixmap = self.pixmap.scaledToHeight(480)
+        self.resize(self.pixmap.width() + 170, self.pixmap.height() + 50)
 
     def init_widgets(self):
         # Button help
