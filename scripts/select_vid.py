@@ -9,8 +9,17 @@ from pathlib import Path
 
 from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QIcon, QFontDatabase
-from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog, QLabel, QLineEdit, \
-    QMessageBox, QFrame, QProgressBar
+from PyQt5.QtWidgets import (
+    QMainWindow,
+    QApplication,
+    QPushButton,
+    QFileDialog,
+    QLabel,
+    QLineEdit,
+    QMessageBox,
+    QFrame,
+    QProgressBar,
+)
 
 import style_sheets
 from analyze_vid import AnalyzeVidWindow
@@ -39,75 +48,99 @@ class SelectVidWindow(QMainWindow):
 
         # Frame for the 2 main buttons
         self.frame_main_buttons = QFrame(self)
-        self.frame_main_buttons.setGeometry(0, 0, self.geometry().width(), self.geometry().height())
+        self.frame_main_buttons.setGeometry(
+            0, 0, self.geometry().width(), self.geometry().height()
+        )
 
         # Select local video button
         self.local_vid_btn = QPushButton(self.frame_main_buttons)
         self.local_vid_btn.setText("Analyze local\n video")
-        self.local_vid_btn.setGeometry(150, round(self.frameGeometry().height()/2), 150, 50)
+        self.local_vid_btn.setGeometry(
+            150, round(self.frameGeometry().height() / 2), 150, 50
+        )
         self.local_vid_btn.clicked.connect(self.select_local_vid)
         self.local_vid_btn.setStyleSheet(style_sheets.btn_style)
 
         # Select instagram video button
         self.insta_vid_btn = QPushButton(self.frame_main_buttons)
         self.insta_vid_btn.setText("Analyze instagram\n video")
-        self.insta_vid_btn.setGeometry(self.frameGeometry().width() - 300,
-                                       round(self.frameGeometry().height()/2), 150, 50)
+        self.insta_vid_btn.setGeometry(
+            self.frameGeometry().width() - 300,
+            round(self.frameGeometry().height() / 2),
+            150,
+            50,
+        )
         self.insta_vid_btn.clicked.connect(self.select_insta_vid)
         self.insta_vid_btn.setStyleSheet(style_sheets.btn_style)
 
         # Frame for selecting insta video
         self.frame_select_insta = QFrame(self)
-        self.frame_select_insta.setGeometry(0, 0, self.geometry().width(), self.geometry().height())
+        self.frame_select_insta.setGeometry(
+            0, 0, self.geometry().width(), self.geometry().height()
+        )
 
         # enter url label
         self.insta_lbl = QLabel(self.frame_select_insta)
         self.insta_lbl.setText("Enter the instagram post URL")
-        self.insta_lbl.setGeometry(round(self.frameGeometry().width() / 2) - 100,
-                                   round(self.frameGeometry().height() / 2) - 40,
-                                   200, 40)
+        self.insta_lbl.setGeometry(
+            round(self.frameGeometry().width() / 2) - 100,
+            round(self.frameGeometry().height() / 2) - 40,
+            200,
+            40,
+        )
         self.insta_lbl.setStyleSheet(style_sheets.lbl_style)
 
         # Download button
         self.download_btn = QPushButton(self.frame_select_insta)
         self.download_btn.setText("Ok")
-        self.download_btn.setGeometry(185, round(self.frameGeometry().height()/2) + 45, 150, 40)
+        self.download_btn.setGeometry(
+            185, round(self.frameGeometry().height() / 2) + 45, 150, 40
+        )
         self.download_btn.clicked.connect(self.download_vid)
         self.download_btn.setStyleSheet(style_sheets.btn_style)
 
         # Return button
         self.return_btn = QPushButton(self.frame_select_insta)
         self.return_btn.setText("Return")
-        self.return_btn.setGeometry(385,
-                                    round(self.frameGeometry().height()/2) + 45, 150, 40)
+        self.return_btn.setGeometry(
+            385, round(self.frameGeometry().height() / 2) + 45, 150, 40
+        )
         self.return_btn.clicked.connect(self.return_home_page)
         self.return_btn.setStyleSheet(style_sheets.btn_style)
 
         # url entry
         self.url_entry = QLineEdit(self.frame_select_insta)
-        self.url_entry.setGeometry(185, round(self.frameGeometry().height()/2), 350, 40)
+        self.url_entry.setGeometry(
+            185, round(self.frameGeometry().height() / 2), 350, 40
+        )
         self.url_entry.setStyleSheet(style_sheets.entry_style)
         self.frame_select_insta.hide()
 
         # info state label
         self.info_state_lbl = QLabel(self)
         self.info_state_lbl.setText("")
-        self.info_state_lbl.setGeometry(0, round(self.frameGeometry().height() / 2) - 200,
-                                        self.frameGeometry().width(), 100)
+        self.info_state_lbl.setGeometry(
+            0,
+            round(self.frameGeometry().height() / 2) - 200,
+            self.frameGeometry().width(),
+            100,
+        )
         self.info_state_lbl.setStyleSheet(style_sheets.lbl_state_style)
 
         # progress label
         self.progress_lbl = QLabel(self)
         self.progress_lbl.setText("")
-        self.progress_lbl.setGeometry(0, self.frameGeometry().height() - 200,
-                                        self.frameGeometry().width(), 100)
+        self.progress_lbl.setGeometry(
+            0, self.frameGeometry().height() - 200, self.frameGeometry().width(), 100
+        )
         self.progress_lbl.setStyleSheet(style_sheets.lbl_state_style)
         self.progress_lbl.hide()
 
         # Progress bar
         self.progress_bar = QProgressBar(self)
-        self.progress_bar.setGeometry(100, self.geometry().height() - 100,
-                                      self.geometry().width() - 200, 50)
+        self.progress_bar.setGeometry(
+            100, self.geometry().height() - 100, self.geometry().width() - 200, 50
+        )
         self.progress_bar.setStyleSheet(style_sheets.progress_bar_style)
         self.progress_bar.hide()
 
@@ -120,8 +153,9 @@ class SelectVidWindow(QMainWindow):
         then if you chose a video, extracts the frames from it and start the analysis window
         """
 
-        dialog_result = QFileDialog.getOpenFileName(self, 'Select video',
-                                                    'c:\\', "Video files (*.mp4 *.vid *.raw)")
+        dialog_result = QFileDialog.getOpenFileName(
+            self, "Select video", "c:\\", "Video files (*.mp4 *.vid *.raw)"
+        )
         video_path = Path(dialog_result[0])
 
         if video_path != Path("."):
@@ -165,10 +199,12 @@ class SelectVidWindow(QMainWindow):
 
             self.downloading_thread = DownloadInstaVideoThread(url)
             self.downloading_thread.start()
-            self.downloading_thread.finished_request.connect(lambda: self.progress_lbl.setText(
-                                                             "Getting the url of the video"))
-            self.downloading_thread.found_url.connect(lambda: self.progress_lbl.setText(
-                                                             "Now downloading the video"))
+            self.downloading_thread.finished_request.connect(
+                lambda: self.progress_lbl.setText("Getting the url of the video")
+            )
+            self.downloading_thread.found_url.connect(
+                lambda: self.progress_lbl.setText("Now downloading the video")
+            )
             self.downloading_thread.error.connect(self._url_error)
             self.downloading_thread.finished.connect(self._finished_downloading)
 
@@ -186,12 +222,14 @@ class SelectVidWindow(QMainWindow):
         error_pop_up.setIcon(QMessageBox.Critical)
         error_pop_up.setStyleSheet(style_sheets.qmsg_box_style)
         if err == "url":
-            error_pop_up.setText('Invalid instagram post url')
+            error_pop_up.setText("Invalid instagram post url")
         if err == "timeout":
             error_pop_up.setText("Timeout, couldn't get a response for this url")
         if err == "connection":
-            error_pop_up.setText("Can't establish a connection to the requested url,"
-                                 "\ncheck your connection")
+            error_pop_up.setText(
+                "Can't establish a connection to the requested url,"
+                "\ncheck your connection"
+            )
         error_pop_up.show()
 
     def _finished_downloading(self, file_name):
@@ -212,8 +250,7 @@ class SelectVidWindow(QMainWindow):
         Start the extracting frame thread and link its different signal to the corresponding methods
         """
 
-        self.info_state_lbl.setText("Extracting frames from the video,"
-                                    "\nplease wait")
+        self.info_state_lbl.setText("Extracting frames from the video," "\nplease wait")
         self.frame_main_buttons.hide()
         self.progress_lbl.show()
         self.progress_bar.show()
@@ -231,8 +268,10 @@ class SelectVidWindow(QMainWindow):
         :param total: the total nb of frame we have to extract
         """
 
-        self.progress_lbl.setText("Extracting frame " + str(current) + " / " + str(total))
-        self.progress_bar.setValue(int(current*100/total))
+        self.progress_lbl.setText(
+            "Extracting frame " + str(current) + " / " + str(total)
+        )
+        self.progress_bar.setValue(int(current * 100 / total))
 
     def finished_getting_frames(self):
         """
@@ -250,7 +289,7 @@ class SelectVidWindow(QMainWindow):
         self.hide()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     QFontDatabase.addApplicationFont("../resources/JetBrainsMono-Regular.ttf")
     main_window = SelectVidWindow()

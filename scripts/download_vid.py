@@ -45,7 +45,7 @@ class DownloadInstaVideoThread(QThread):
                 video_url = _get_video_url(response)
                 self.found_url.emit()
 
-                post_name = self.post_url.split('/p/')[-1].rstrip('/')
+                post_name = self.post_url.split("/p/")[-1].rstrip("/")
                 file_name = "insta_video_" + post_name + ".mp4"
                 video_path = Path.cwd().parent / "insta_videos" / file_name
 
@@ -54,9 +54,11 @@ class DownloadInstaVideoThread(QThread):
 
             else:
                 self.error.emit("timeout")
-        except (requests.exceptions.MissingSchema,
-                requests.exceptions.InvalidSchema,
-                requests.exceptions.InvalidURL):
+        except (
+            requests.exceptions.MissingSchema,
+            requests.exceptions.InvalidSchema,
+            requests.exceptions.InvalidURL,
+        ):
             self.error.emit("url")
         except requests.exceptions.ConnectionError:
             self.error.emit("connection")
@@ -71,7 +73,7 @@ def _download_video(video_url, video_path):
     """
 
     r = requests.get(video_url, stream=True)
-    with open(video_path, 'wb') as f:
+    with open(video_path, "wb") as f:
         for chunk in r.iter_content(1024):
             if chunk:
                 f.write(chunk)
@@ -86,7 +88,7 @@ def _get_response(url):
     """
 
     time_first_attempt = time.time()
-    response = requests.get(url, headers={'User-agent': 'idk_just_let_me_dl_this'})
+    response = requests.get(url, headers={"User-agent": "idk_just_let_me_dl_this"})
     while response.status_code != 200:
         response = requests.get(url)
 
@@ -103,8 +105,8 @@ def _get_video_url(response):
     :return: str: The url of the video
     """
     soup = BeautifulSoup(response.text, "html.parser")
-    script_with_url = soup.find('script', text=re.compile('window\._sharedData'))
-    list_attributes = script_with_url.string.split(',')
+    script_with_url = soup.find("script", text=re.compile("window\._sharedData"))
+    list_attributes = script_with_url.string.split(",")
 
     for elem in list_attributes:
         if "video_url" in elem:
@@ -138,7 +140,7 @@ def download_from_instagram(post_url):
     response = _get_response(post_url)
     video_url = _get_video_url(response)
 
-    post_name = post_url.split('/p/')[-1].rstrip('/')
+    post_name = post_url.split("/p/")[-1].rstrip("/")
     file_name = "insta_video_" + post_name + ".mp4"
     video_path = Path.cwd().parent / "insta_videos" / file_name
 

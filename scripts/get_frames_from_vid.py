@@ -53,7 +53,12 @@ class ExtractFramesThread(QThread):
 
                 if ret:
                     if (frame_count % 10) == 0:
-                        print("creating frame nb " + str(frame_count) + " / " + str(total_count))
+                        print(
+                            "creating frame nb "
+                            + str(frame_count)
+                            + " / "
+                            + str(total_count)
+                        )
                         self.progression.emit(frame_count, total_count)
 
                     name = str(working_folder / ("frame" + str(frame_count) + ".jpg"))
@@ -102,8 +107,8 @@ def _create_info_file(frame_count, fps, working_folder):
     """
 
     info_file = working_folder / "info.txt"
-    with open(info_file, 'x') as file:
-        file.writelines([str(frame_count), '\n' + str(fps)])
+    with open(info_file, "x") as file:
+        file.writelines([str(frame_count), "\n" + str(fps)])
 
 
 def _check_if_loaded(working_folder):
@@ -128,7 +133,7 @@ def _check_if_loaded(working_folder):
 
             # Then checks if all the frames already exists
             already_loaded = True
-            for i in range(nb_frame+1):
+            for i in range(nb_frame + 1):
                 frame = working_folder / ("frame" + str(i) + ".jpg")
 
                 # if one frame is missing, the video is not fully loaded
