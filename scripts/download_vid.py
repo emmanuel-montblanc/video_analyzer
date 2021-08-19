@@ -46,8 +46,12 @@ class DownloadInstaVideoThread(QThread):
 
             else:
                 self.error.emit("timeout")
-        except requests.exceptions.MissingSchema:
+        except (requests.exceptions.MissingSchema,
+                requests.exceptions.InvalidSchema,
+                requests.exceptions.InvalidURL):
             self.error.emit("url")
+        except requests.exceptions.ConnectionError:
+            self.error.emit("connection")
 
 
 def _download_video(video_url, video_path):

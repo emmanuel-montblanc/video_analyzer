@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-import requests
 from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QIcon, QFontDatabase
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog, QLabel, QLineEdit, \
@@ -108,7 +107,6 @@ class SelectVidWindow(QMainWindow):
         dialog_result = QFileDialog.getOpenFileName(self, 'Select video',
                                                     'c:\\', "Video files (*.mp4 *.vid *.raw)")
         video_path = Path(dialog_result[0])
-        print(video_path)
 
         if video_path != Path("."):
             self.video_path = video_path
@@ -146,10 +144,14 @@ class SelectVidWindow(QMainWindow):
 
         error_pop_up = QMessageBox(self)
         error_pop_up.setIcon(QMessageBox.Critical)
+        error_pop_up.setStyleSheet(style_sheets.qmsg_box_style)
         if err == "url":
             error_pop_up.setText('Invalid instagram post url')
-        else:
+        if err == "timeout":
             error_pop_up.setText("Timeout, couldn't get a response for this url")
+        if err == "connection":
+            error_pop_up.setText("Can't establish a connection to the requested url,"
+                                 "\ncheck your connection")
         error_pop_up.show()
 
     def _finished_downloading(self, file_name):

@@ -5,7 +5,9 @@ GREEN = "#3aff22"
 RED = "red"
 
 
-wndw_style = "background-color: " + BLACK_BACKGROUND + ";"
+wndw_style = "background-color: " + BLACK_BACKGROUND + ";" \
+             "font: 10pt JetBrains Mono;" \
+             "color: " + WHITE + ";" \
 
 btn_style = "QPushButton {" \
             "   background-color: " + LESSER_BLACK_BACKGROUND + ";" \
@@ -116,4 +118,24 @@ progress_bar_style = "QProgressBar {" \
                      "{" \
                      "background-color: " + WHITE + ";" \
                      "border-radius :15px;}"
-
+qmsg_box_style = "QMessageBox{" \
+                 "  background-color: " + BLACK_BACKGROUND + ";" \
+                 "  font: 10pt JetBrains Mono;" \
+                 "  color: " + WHITE + ";}" \
+                 "QMessageBox QPushButton{" \
+                 "   background-color: " + LESSER_BLACK_BACKGROUND + ";" \
+                 "   border-style: outset;" \
+                 "   border-width: 2px;" \
+                 "   border-radius: 10px;" \
+                 "   border-color: black;" \
+                 "   font: 10pt JetBrains Mono;" \
+                 "   color: " + WHITE + ";" \
+                 "   min-width: 50px;" \
+                 "   padding: 0px;" \
+                 "}" \
+                 "QMessageBox QPushButton:hover {" \
+                 "    border-color: " + WHITE + ";" \
+                 "    border-style: inset;}" \
+                 "QMessageBox QPushButton:pressed {" \
+                 "    border-color: " + WHITE + ";" \
+                 "    border-style: inset;}"
