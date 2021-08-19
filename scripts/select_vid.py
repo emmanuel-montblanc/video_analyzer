@@ -2,18 +2,15 @@ import sys
 from pathlib import Path
 
 import requests
-from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtCore import QThread
 from PyQt5.QtGui import QIcon, QFontDatabase
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog, QLabel, QLineEdit, \
     QMessageBox, QFrame, QProgressBar
 
+import style_sheets
 from analyze_vid import AnalyzeVidWindow
 from download_vid import download_from_instagram
 from get_frames_from_vid import ExtractFramesThread
-from style_sheets import wndw_style, btn_style, lbl_style, lbl_state_style, entry_style, progress_bar_style
-
-
-# TODO: add a loading bar, when extracting the frames
 
 
 class SelectVidWindow(QMainWindow):
@@ -22,7 +19,7 @@ class SelectVidWindow(QMainWindow):
         self.resize(720, 480)
         self.setWindowTitle("Video analyzer")
         self.setWindowIcon(QIcon("../resources/diamond_twist.png"))
-        self.setStyleSheet(wndw_style)
+        self.setStyleSheet(style_sheets.wndw_style)
 
         self.analyze_window = QMainWindow()
         self.thread = QThread()
@@ -38,7 +35,7 @@ class SelectVidWindow(QMainWindow):
         self.local_vid_btn.setText("Analyze local\n video")
         self.local_vid_btn.setGeometry(150, round(self.frameGeometry().height()/2), 150, 50)
         self.local_vid_btn.clicked.connect(self.select_local_vid)
-        self.local_vid_btn.setStyleSheet(btn_style)
+        self.local_vid_btn.setStyleSheet(style_sheets.btn_style)
 
         # Select instagram video button
         self.insta_vid_btn = QPushButton(self.frame_main_buttons)
@@ -46,7 +43,7 @@ class SelectVidWindow(QMainWindow):
         self.insta_vid_btn.setGeometry(self.frameGeometry().width() - 300,
                                        round(self.frameGeometry().height()/2), 150, 50)
         self.insta_vid_btn.clicked.connect(self.select_insta_vid)
-        self.insta_vid_btn.setStyleSheet(btn_style)
+        self.insta_vid_btn.setStyleSheet(style_sheets.btn_style)
 
         # Frame for selecting insta video
         self.frame_select_insta = QFrame(self)
@@ -58,7 +55,7 @@ class SelectVidWindow(QMainWindow):
         self.insta_lbl.setGeometry(round(self.frameGeometry().width() / 2) - 100,
                                    round(self.frameGeometry().height() / 2) - 40,
                                    200, 40)
-        self.insta_lbl.setStyleSheet(lbl_style)
+        self.insta_lbl.setStyleSheet(style_sheets.lbl_style)
 
         # Download button
         self.download_btn = QPushButton(self.frame_select_insta)
@@ -66,7 +63,7 @@ class SelectVidWindow(QMainWindow):
         self.download_btn.setGeometry(185,
                                     round(self.frameGeometry().height()/2) + 45, 150, 40)
         self.download_btn.clicked.connect(self.download_vid)
-        self.download_btn.setStyleSheet(btn_style)
+        self.download_btn.setStyleSheet(style_sheets.btn_style)
 
         # Return button
         self.return_btn = QPushButton(self.frame_select_insta)
@@ -74,12 +71,12 @@ class SelectVidWindow(QMainWindow):
         self.return_btn.setGeometry(385,
                                     round(self.frameGeometry().height()/2) + 45, 150, 40)
         self.return_btn.clicked.connect(self.return_home_page)
-        self.return_btn.setStyleSheet(btn_style)
+        self.return_btn.setStyleSheet(style_sheets.btn_style)
 
         # url entry
         self.url_entry = QLineEdit(self.frame_select_insta)
         self.url_entry.setGeometry(185, round(self.frameGeometry().height()/2), 350, 40)
-        self.url_entry.setStyleSheet(entry_style)
+        self.url_entry.setStyleSheet(style_sheets.entry_style)
         self.frame_select_insta.hide()
 
         # info state label
@@ -87,21 +84,21 @@ class SelectVidWindow(QMainWindow):
         self.info_state_lbl.setText("")
         self.info_state_lbl.setGeometry(0, round(self.frameGeometry().height() / 2) - 200,
                                         self.frameGeometry().width(), 100)
-        self.info_state_lbl.setStyleSheet(lbl_state_style)
+        self.info_state_lbl.setStyleSheet(style_sheets.lbl_state_style)
 
         # progress label
         self.progress_lbl = QLabel(self)
         self.progress_lbl.setText("")
         self.progress_lbl.setGeometry(0, self.frameGeometry().height() - 200,
                                         self.frameGeometry().width(), 100)
-        self.progress_lbl.setStyleSheet(lbl_state_style)
+        self.progress_lbl.setStyleSheet(style_sheets.lbl_state_style)
         self.progress_lbl.hide()
 
         # Progress bar
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setGeometry(100, self.geometry().height() - 100,
                                       self.geometry().width() - 200, 50)
-        self.progress_bar.setStyleSheet(progress_bar_style)
+        self.progress_bar.setStyleSheet(style_sheets.progress_bar_style)
         self.progress_bar.hide()
 
         self.show()
