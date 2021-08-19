@@ -338,7 +338,7 @@ class AnalyzeVidWindow(QMainWindow):
 
         # Update the current frame if we are playing the video using the right click
         if event.buttons() and Qt.RightButton and self.playing_using_mouse:
-            self.update_current_frame(event)
+            self.update_current_frame(event.pos().x())
 
         self.update()
 
@@ -363,7 +363,7 @@ class AnalyzeVidWindow(QMainWindow):
             if self.select_zooming:
                 self.unzoom()
             else:
-                self.update_current_frame(event)
+                self.update_current_frame(event.pos().x())
                 self.playing_using_mouse = True
 
     def mouseReleaseEvent(self, event):
@@ -394,16 +394,20 @@ class AnalyzeVidWindow(QMainWindow):
         if event.button() == Qt.RightButton:
             self.playing_using_mouse = False
 
-    def update_current_frame(self, event):
+    def update_current_frame(self, x_pos):
         """
         Method called when playing the video by using the right click
         Get the position of the mouse on the frame, find the frame number corresponding to this
         position, check if the frame number is valid, and loads it.
-        :param: event: event passed as argument to the method to get the x position of the mouse
+        :param: x_pos: the x position of the mouse
         """
 
-        relative_pos = event.pos().x() / self.pixmap.width()
-        self.current_frame = int(relative_pos * self.nb_frames)
+        if self.compare_vid and x_pos >= self.pixmap.width():
+            relative_pos = (x_pos - self.pixmap.width()) / self.pixmap_to_compare.width()
+            self.current_frame_to_compare = int(relative_pos * self.nb_frames_to_compare)
+        else:
+            relative_pos = x_pos / self.pixmap.width()
+            self.current_frame = int(relative_pos * self.nb_frames)
 
         self.check_current_frame()
         self.load_current_frame()
@@ -418,6 +422,12 @@ class AnalyzeVidWindow(QMainWindow):
             self.current_frame = self.nb_frames
         if self.current_frame < 0:
             self.current_frame = 0
+
+        if self.compare_vid:
+            if self.current_frame_to_compare > self.nb_frames_to_compare:
+                self.current_frame_to_compare = self.nb_frames_to_compare
+            if self.current_frame_to_compare < 0:
+                self.current_frame_to_compare = 0
 
     def load_current_frame(self):
         """
