@@ -288,8 +288,11 @@ class AnalyzeVidWindow(QMainWindow):
 
         # Update zooming rectangle if we are selecting the zoom
         if event.buttons() and Qt.LeftButton and self.select_zooming:
+            rect_width = event.x() - self.zoom_point.x()
+            if rect_width < 20:
+                rect_width = 20
             self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
-                                      event.x(), event.x()/self.vid_ratio)
+                                      rect_width, rect_width/self.vid_ratio)
 
         # Update the current frame if we are playing the video using the right click
         if event.buttons() and Qt.RightButton and self.playing_using_mouse:
