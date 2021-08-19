@@ -15,9 +15,7 @@ from style_sheets import wndw_style, lbl_style, btn_style, btn_style_selected,\
     dsply_txt_style, WHITE, RED, GREEN
 
 
-# TODO: comparer deux video
-# TODO: add docstrings everywhere
-
+# TODO: compare video
 
 class AnalyzeVidWindow(QMainWindow):
     """
