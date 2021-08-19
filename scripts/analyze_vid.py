@@ -38,7 +38,7 @@ class AnalyzeVidWindow(QMainWindow):
             self.fps = int(file.readline().strip())
 
         self.current_frame = 0
-        self.pixmap = QPixmap("../videos/" + self.video_name + "/frame0.jpg")
+        self.pixmap = QPixmap()
         self.adapt_size()
 
         self.fixed_width = self.pixmap.width()
@@ -99,6 +99,22 @@ class AnalyzeVidWindow(QMainWindow):
         self.timer.timeout.connect(self.timer_update)
         self.timer.start(round(1000/self.fps))
 
+        # -----------------------------------------------
+        # Compare
+        self.button_compare_vid = QPushButton(self.frame)
+        self.button_compare_vid.setText("Compare videos")
+        self.button_compare_vid.setGeometry(10, 480, 150, 40)
+        self.button_compare_vid.setStyleSheet(btn_style)
+        self.button_compare_vid.clicked.connect(self.compare_video)
+
+        self.video_to_compare = "VID_20201105_150534_01"
+        self.nb_frames_to_compare = 304
+        self.current_frame_to_compare = 50
+        self.compare_vid = False
+        self.pixmap_to_compare = QPixmap("../videos/" + self.video_to_compare + "/frame0.jpg")
+
+        # ------------------------------------------------
+
         self.show()
 
     def init_window(self):
@@ -118,12 +134,14 @@ class AnalyzeVidWindow(QMainWindow):
         """
 
         screen_size = QApplication.primaryScreen().geometry()
+        self.pixmap = QPixmap("../videos/" + self.video_name + "/frame0.jpg")
+
         if self.pixmap.width() >= screen_size.width() - 200:
             self.pixmap = self.pixmap.scaledToWidth(screen_size.width() - 200)
         if self.pixmap.height() >= screen_size.height() - 120:
             self.pixmap = self.pixmap.scaledToHeight(screen_size.height() - 120)
-        if self.pixmap.height() < 480:
-            self.pixmap = self.pixmap.scaledToHeight(480)
+        if self.pixmap.height() < 530:
+            self.pixmap = self.pixmap.scaledToHeight(530)
         self.resize(self.pixmap.width() + 170, self.pixmap.height() + 50)
 
     def init_widgets(self):
@@ -217,6 +235,11 @@ class AnalyzeVidWindow(QMainWindow):
         painter.begin(self)
 
         painter.drawPixmap(self.pixmap.rect(), self.pixmap)
+        if self.compare_vid:
+            painter.drawPixmap(QRect(self.pixmap.width(), 0,
+                                     self.pixmap_to_compare.width(),
+                                     self.pixmap_to_compare.height()),
+                               self.pixmap_to_compare)
         self.draw_progress_bar(painter)
         self.draw_lines(painter)
         self.draw_zooming_rect(painter)
@@ -241,6 +264,25 @@ class AnalyzeVidWindow(QMainWindow):
         x_pos = int(self.current_frame * self.pixmap.width() / self.nb_frames)
         painter.drawLine(QPoint(x_pos, self.frameGeometry().height()),
                          QPoint(x_pos, self.frameGeometry().height() - 80))
+
+        if self.compare_vid:
+            # Draw the separation between the video
+            painter.drawLine(QPoint(self.pixmap.width(), 0),
+                             QPoint(self.pixmap.width(), self.frameGeometry().height()))
+
+            # Draw the compare vid progress bar
+            painter.setPen(QPen(QColor(WHITE), 3, Qt.SolidLine))
+            painter.drawLine(QPoint(self.pixmap.width(), self.frameGeometry().height() - 60),
+                             QPoint(self.pixmap.width() + self.pixmap_to_compare.width(),
+                                    self.frameGeometry().height() - 60))
+
+            # Draw the cursor on the compare vid progress bar
+            x_compare_pos = int(self.current_frame_to_compare * self.pixmap_to_compare.width()
+                                / self.nb_frames_to_compare)
+            painter.drawLine(QPoint(x_compare_pos + self.pixmap.width(),
+                                    self.frameGeometry().height()),
+                             QPoint(x_compare_pos + self.pixmap.width(),
+                                    self.frameGeometry().height() - 80))
 
     def draw_lines(self, painter):
         """
@@ -386,6 +428,12 @@ class AnalyzeVidWindow(QMainWindow):
         self.pixmap = QPixmap("../videos/" + self.video_name +
                               "/frame" + str(self.current_frame) + ".jpg")
         self.pixmap = self.pixmap.scaledToWidth(self.fixed_width)
+
+        if self.compare_vid:
+            self.pixmap = self.pixmap.scaledToWidth(round(self.fixed_width/2))
+            self.pixmap_to_compare = QPixmap("../videos/" + self.video_to_compare +
+                                             "/frame" + str(self.current_frame_to_compare) + ".jpg")
+            self.pixmap_to_compare = self.pixmap_to_compare.scaledToHeight(self.pixmap.height())
 
         if self.zooming:
             copy = self.pixmap.copy(self.zooming_rect)
@@ -557,6 +605,19 @@ class AnalyzeVidWindow(QMainWindow):
         self.parent_window.show()
         self.close()
 
+    def compare_video(self):
+        if not self.compare_vid:
+            self.compare_vid = True
+            self.load_current_frame()
+            self.resize(self.pixmap.width() + self.pixmap_to_compare.width() + 170,
+                        self.pixmap.height() + 50)
+            if self.geometry().height() < 560:
+                self.resize(self.pixmap.width() + self.pixmap_to_compare.width() + 170,
+                            560)
+        else:
+            self.compare_vid = False
+            self.adapt_size()
+
 
 class HelpWindow(QMainWindow):
     """
@@ -583,5 +644,5 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
     QFontDatabase.addApplicationFont("../resources/JetBrainsMono-Regular.ttf")
     # print(QFontDatabase().families())
-    main_window = AnalyzeVidWindow("", "VID_20200522_151949")
+    main_window = AnalyzeVidWindow("", "VID_20210228_143048_01")
     sys.exit(app.exec_())
