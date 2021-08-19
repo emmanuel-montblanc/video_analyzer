@@ -4,10 +4,50 @@ This module allows you to download a video from instagram with the url of a post
 
 
 import re
+import time
 from pathlib import Path
 
 import requests
+from PyQt5.QtCore import QThread, pyqtSignal
 from bs4 import BeautifulSoup
+
+
+class DownloadInstaVideoThread(QThread):
+    finished_request = pyqtSignal()
+    found_url = pyqtSignal()
+    finished = pyqtSignal(str)
+    error = pyqtSignal(str)
+
+    def __init__(self, post_url):
+        super().__init__()
+        self.post_url = post_url
+
+    def run(self):
+        """
+        do a request on <post_url>, get the response and parse it to find the video url,
+        then download the video and save it in the folder "insta_videos"
+        """
+        _create_insta_videos_folder()
+
+        try:
+            response = _get_response(self.post_url)
+            if response != "timeout":
+                self.finished_request.emit()
+
+                video_url = _get_video_url(response)
+                self.found_url.emit()
+
+                post_name = self.post_url.split('/p/')[-1].rstrip('/')
+                file_name = "insta_video_" + post_name + ".mp4"
+                video_path = Path.cwd().parent / "insta_videos" / file_name
+
+                _download_video(video_url, video_path)
+                self.finished.emit(file_name)
+
+            else:
+                self.error.emit("timeout")
+        except requests.exceptions.MissingSchema:
+            self.error.emit("url")
 
 
 def _download_video(video_url, video_path):
@@ -32,10 +72,14 @@ def _get_response(url):
     :param url: the url we want to make a request on
     :return: response: the response to the request
     """
-
+    time_first_attempt = time.time()
     response = requests.get(url, headers={'User-agent': 'idk_just_let_me_dl_this'})
     while response.status_code != 200:
         response = requests.get(url)
+
+        print(time.time() - time_first_attempt)
+        if time.time() - time_first_attempt > 10:
+            return "timeout"
     return response
 
 

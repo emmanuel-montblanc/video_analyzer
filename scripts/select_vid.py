@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QFileDialog,
 
 import style_sheets
 from analyze_vid import AnalyzeVidWindow
-from download_vid import download_from_instagram
+from download_vid import DownloadInstaVideoThread
 from get_frames_from_vid import ExtractFramesThread
 
 
@@ -22,7 +22,8 @@ class SelectVidWindow(QMainWindow):
         self.setStyleSheet(style_sheets.wndw_style)
 
         self.analyze_window = QMainWindow()
-        self.thread = QThread()
+        self.extracting_thread = QThread()
+        self.downloading_thread = QThread()
 
         self.video_path = Path()
 
@@ -124,18 +125,36 @@ class SelectVidWindow(QMainWindow):
     def download_vid(self):
         url = self.url_entry.text()
         if url:
-            try:
-                self.info_state_lbl.setText("Downloading the video from : " + url)
-                file_name = download_from_instagram(url)
-                self.video_path = Path.cwd().parent / "insta_videos" / file_name
+            self.frame_select_insta.hide()
+            self.info_state_lbl.setText("Downloading the video from : \n" + url)
+            self.progress_lbl.setText("Requesting the url")
+            self.progress_lbl.show()
 
-                self.start_analyze()
-            except requests.exceptions.MissingSchema:
-                self.info_state_lbl.setText("")
-                error_pop_up = QMessageBox(self)
-                error_pop_up.setIcon(QMessageBox.Critical)
-                error_pop_up.setText('Invalid instagram post url')
-                error_pop_up.show()
+            self.downloading_thread = DownloadInstaVideoThread(url)
+            self.downloading_thread.start()
+            self.downloading_thread.finished_request.connect(lambda: self.progress_lbl.setText(
+                                                             "Getting the url of the video"))
+            self.downloading_thread.found_url.connect(lambda: self.progress_lbl.setText(
+                                                             "Now downloading the video"))
+            self.downloading_thread.error.connect(self._url_error)
+            self.downloading_thread.finished.connect(self._finished_downloading)
+
+    def _url_error(self, err):
+        self.info_state_lbl.setText("")
+        self.progress_lbl.hide()
+        self.frame_select_insta.show()
+
+        error_pop_up = QMessageBox(self)
+        error_pop_up.setIcon(QMessageBox.Critical)
+        if err == "url":
+            error_pop_up.setText('Invalid instagram post url')
+        else:
+            error_pop_up.setText("Timeout, couldn't get a response for this url")
+        error_pop_up.show()
+
+    def _finished_downloading(self, file_name):
+        self.video_path = Path.cwd().parent / "insta_videos" / file_name
+        self.start_analyze()
 
     def start_analyze(self):
         self.info_state_lbl.setText("Extracting frames from the video,"
@@ -143,10 +162,11 @@ class SelectVidWindow(QMainWindow):
         self.frame_main_buttons.hide()
         self.progress_lbl.show()
         self.progress_bar.show()
-        self.thread = ExtractFramesThread(self.video_path)
-        self.thread.start()
-        self.thread.progression.connect(self.update_extraction_progress)
-        self.thread.finished.connect(self.finished_getting_frames)
+
+        self.extracting_thread = ExtractFramesThread(self.video_path)
+        self.extracting_thread.start()
+        self.extracting_thread.progression.connect(self.update_extraction_progress)
+        self.extracting_thread.finished.connect(self.finished_getting_frames)
 
     def finished_getting_frames(self):
         self.analyze_window = AnalyzeVidWindow(self, self.video_path.stem)
