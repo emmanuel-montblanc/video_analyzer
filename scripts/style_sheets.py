@@ -1,3 +1,7 @@
+"""
+This module just contains colors and stylesheets, made to be imported by the GUI
+"""
+
 BLACK_BACKGROUND = "#2b2b2b"
 LESSER_BLACK_BACKGROUND = "#3c3f41"
 WHITE = "#a9b7c6"
@@ -118,6 +122,7 @@ progress_bar_style = "QProgressBar {" \
                      "{" \
                      "background-color: " + WHITE + ";" \
                      "border-radius :15px;}"
+
 qmsg_box_style = "QMessageBox{" \
                  "  background-color: " + BLACK_BACKGROUND + ";" \
                  "  font: 10pt JetBrains Mono;" \
