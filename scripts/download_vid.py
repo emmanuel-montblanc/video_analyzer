@@ -13,6 +13,12 @@ from bs4 import BeautifulSoup
 
 
 class DownloadInstaVideoThread(QThread):
+    """
+    QThread class, made to be use with the select_vid windows,
+    downloads the video of the post <post_url>
+    :param str post_url: the post of the video we want to download
+    """
+
     finished_request = pyqtSignal()
     found_url = pyqtSignal()
     finished = pyqtSignal(str)
@@ -26,7 +32,9 @@ class DownloadInstaVideoThread(QThread):
         """
         do a request on <post_url>, get the response and parse it to find the video url,
         then download the video and save it in the folder "insta_videos"
+        emits signals to indicate to the gui at which state is it.
         """
+
         _create_insta_videos_folder()
 
         try:
@@ -57,8 +65,8 @@ class DownloadInstaVideoThread(QThread):
 def _download_video(video_url, video_path):
     """
     download the video at the url <video_url> and save it at the location <video_path>
-    :param video_url: The video we want to download
-    :param video_path: The location where we save the video
+    :param str video_url: The video we want to download
+    :param Path video_path: The location where we save the video
     :return: None
     """
 
@@ -73,9 +81,10 @@ def _download_video(video_url, video_path):
 def _get_response(url):
     """
     do a html request on the url <url> until it suceeds, and return the response,
-    :param url: the url we want to make a request on
-    :return: response: the response to the request
+    :param str url: the url we want to make a request on
+    :return: Response: the response to the request
     """
+
     time_first_attempt = time.time()
     response = requests.get(url, headers={'User-agent': 'idk_just_let_me_dl_this'})
     while response.status_code != 200:
@@ -90,8 +99,8 @@ def _get_response(url):
 def _get_video_url(response):
     """
     Parse the reponse to the html request, search and return the url of the video
-    :param response:
-    :return: video_url: the url of the video
+    :param Response response: the response to the request made
+    :return: str: The url of the video
     """
     soup = BeautifulSoup(response.text, "html.parser")
     script_with_url = soup.find('script', text=re.compile('window\._sharedData'))
@@ -120,8 +129,8 @@ def download_from_instagram(post_url):
     """
     do a request on <post_url>, get the response and parse it to find the video url,
     then download the video and save it in the folder "insta_videos"
-    :param post_url: the post of the video we want to download
-    :return: video_path: the path of the video downloaded
+    :param str post_url: the post of the video we want to download
+    :return: the path of the video downloaded
     """
 
     _create_insta_videos_folder()
