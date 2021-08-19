@@ -1,5 +1,5 @@
 """
-This modules allows you to extract the frames from a video, and store them in a folder as jpeg images
+This module allows you to extract the frames from a video, and store them in a folder as jpeg images
 """
 
 import os
@@ -9,6 +9,12 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 
 class ExtractFramesThread(QThread):
+    """
+    QThread class, made to be use with the select_vid windows,
+    Extracts the frames of the video <video_path>, if it wasn't already done,
+    :param Path video_path: the path to the video we want to extract the frames from
+    """
+
     finished = pyqtSignal()
     progression = pyqtSignal(int, int)
 
@@ -22,7 +28,7 @@ class ExtractFramesThread(QThread):
 
     def get_frames(self):
         """
-        Checks if the video wasnt loaded yet, if it wasn't, extract every frame from the video,
+        Checks if the video wasn't loaded yet, if it wasn't, extract every frame from the video,
         and save them in the folder videos/<name of the video>
         :return: None
         """
@@ -57,7 +63,8 @@ class ExtractFramesThread(QThread):
                 else:
                     break
 
-            # At the last iteration, the frame count is still increase, but there no more images created
+            # At the last iteration, the frame count is still increase,
+            # but there no more images created
             frame_count -= 1
 
             _create_info_file(frame_count, fps, working_folder)
