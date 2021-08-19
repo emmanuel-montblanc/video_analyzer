@@ -108,11 +108,24 @@ class AnalyzeVidWindow(QMainWindow):
         self.button_compare_vid.setStyleSheet(btn_style)
         self.button_compare_vid.clicked.connect(self.compare_video)
 
+        self.button_zoom2 = QPushButton(self.frame)
+        self.button_zoom2 .setText("zoom 2")
+        self.button_zoom2 .setGeometry(90, 150, 70, 40)
+        self.button_zoom2 .setStyleSheet(btn_style)
+        self.button_zoom2 .clicked.connect(self.zoom_image)
+        self.button_zoom2.hide()
+
         self.video_to_compare = "VID_20201105_150534_01"
         self.nb_frames_to_compare = 304
         self.current_frame_to_compare = 50
         self.compare_vid = False
+
+        self.select_zooming2 = False
+        self.zooming2 = False
+        self.zoom_point2 = QPoint()
+        self.zooming_rect2 = QRect()
         self.pixmap_to_compare = QPixmap("../videos/" + self.video_to_compare + "/frame0.jpg")
+        self.vid_ratio_to_compare = self.pixmap_to_compare.width() / self.pixmap_to_compare.height()
 
         # ------------------------------------------------
 
@@ -307,10 +320,13 @@ class AnalyzeVidWindow(QMainWindow):
         if we are currently selecting where to zoom, draw the rectangle on where we will zoom
         :param QPainter painter: the current painter object
         """
+        painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
 
         if self.select_zooming and self.zoom_point != QPoint():
-            painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
             painter.drawRect(self.zooming_rect)
+
+        if self.compare_vid and self.select_zooming2 and self.zoom_point2 != QPoint():
+            painter.drawRect(self.zooming_rect2)
 
     def mouseMoveEvent(self, event):
         """
@@ -334,8 +350,19 @@ class AnalyzeVidWindow(QMainWindow):
             rect_width = event.x() - self.zoom_point.x()
             if rect_width < 20:
                 rect_width = 20
+            if event.x() >= self.pixmap.width():
+                rect_width = self.pixmap.width() - self.zoom_point.x()
             self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
-                                      rect_width, rect_width/self.vid_ratio)
+                                      rect_width, round(rect_width/self.vid_ratio))
+
+        if event.buttons() and Qt.LeftButton and self.select_zooming2:
+            rect_width = event.x() - self.zoom_point2.x()
+            if rect_width < 20:
+                rect_width = 20
+            if event.x() - self.pixmap.width() >= self.pixmap_to_compare.width():
+                rect_width = self.pixmap.width() + self.pixmap_to_compare.width() - self.zoom_point2.x()
+            self.zooming_rect2 = QRect(self.zoom_point2.x(), self.zoom_point2.y(),
+                                       rect_width, round(rect_width/self.vid_ratio_to_compare))
 
         # Update the current frame if we are playing the video using the right click
         if event.buttons() and Qt.RightButton and self.playing_using_mouse:
@@ -354,15 +381,19 @@ class AnalyzeVidWindow(QMainWindow):
 
         if event.button() == Qt.LeftButton:
             if self.select_zooming:
-                if self.zoom_point == QPoint():
-                    self.zoom_point = event.pos()
+                self.zoom_point = event.pos()
+            elif self.select_zooming2:
+                self.zoom_point2 = event.pos()
+                print(self.zoom_point2)
             else:
                 self.drawing = True
                 self.lastPoint = event.pos()
 
         if event.button() == Qt.RightButton:
             if self.select_zooming:
-                self.unzoom()
+                self.unzoom(self.button_zoom)
+            elif self.select_zooming2:
+                self.unzoom(self.button_zoom2)
             else:
                 self.update_current_frame(event.pos().x())
                 self.playing_using_mouse = True
@@ -380,12 +411,23 @@ class AnalyzeVidWindow(QMainWindow):
         if event.button() == Qt.LeftButton:
             if self.select_zooming:
                 self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
-                                          event.x(), event.x() / self.vid_ratio)
+                                          event.x(), round(event.x() / self.vid_ratio))
                 self.zoom_point = QPoint()
                 self.select_zooming = False
                 self.zooming = True
                 self.load_current_frame()
                 self.update()
+
+            elif self.select_zooming2:
+                self.zooming_rect2 = QRect(self.zoom_point2.x(), self.zoom_point2.y(),
+                                           event.x(), round(event.x() / self.vid_ratio))
+                print(self.zooming_rect2)
+                self.zoom_point2 = QPoint()
+                self.select_zooming2 = False
+                self.zooming2 = True
+                self.load_current_frame()
+                self.update()
+
             else:
                 if self.current_line:
                     self.lines.append(self.current_line)
@@ -446,7 +488,18 @@ class AnalyzeVidWindow(QMainWindow):
                                              "/frame" + str(self.current_frame_to_compare) + ".jpg")
             self.pixmap_to_compare = self.pixmap_to_compare.scaledToHeight(self.pixmap.height())
 
-        if self.zooming:
+            if self.zooming:
+                copy = self.pixmap.copy(QRect(self.zooming_rect.x(), self.zooming_rect.y(),
+                                              self.zooming_rect.width(), self.zooming_rect.height()))
+                self.pixmap = copy.scaledToWidth(round(self.fixed_width/2))
+
+            if self.zooming2:
+                copy = self.pixmap_to_compare.copy(QRect(self.zooming_rect2.x() - self.pixmap.width(), self.zooming_rect2.y(),
+                                              self.zooming_rect2.width(),
+                                              self.zooming_rect2.height()))
+                self.pixmap_to_compare = copy.scaledToHeight(self.pixmap.height())
+
+        elif self.zooming:
             copy = self.pixmap.copy(self.zooming_rect)
             self.pixmap = copy.scaledToWidth(self.fixed_width)
 
@@ -577,22 +630,39 @@ class AnalyzeVidWindow(QMainWindow):
         start zooming if you left click where you want to zoom on the video
         """
 
-        self.select_zooming = True
-        self.button_zoom.setText("Unzoom")
-        self.button_zoom.clicked.connect(self.unzoom)
+        sender = self.sender()
 
-    def unzoom(self):
+        if sender is self.button_zoom:
+            self.select_zooming = True
+            self.button_zoom.setText("Unzoom")
+            self.button_zoom.clicked.connect(lambda: self.unzoom(self.button_zoom))
+        else:
+            self.select_zooming2 = True
+            self.button_zoom2.setText("Unzoom")
+            self.button_zoom2.clicked.connect(lambda: self.unzoom(self.button_zoom2))
+
+    def unzoom(self, zoom_btn):
         """
         Method called when clicking on the unzoom button,
         simply stop zooming, reset the zooming rectangle, reload the frame and updates the window
         """
 
-        self.button_zoom.setText("zoom")
-        self.zooming = False
-        self.select_zooming = False
-        self.zoom_point = QPoint()
+        if self.compare_vid and zoom_btn == self.button_zoom2:
+            zoom_btn.setText("zoom 2")
+            self.zooming2 = False
+            self.select_zooming2 = False
+            self.zoom_point2 = QPoint()
 
-        self.button_zoom.clicked.connect(self.zoom_image)
+        else:
+            if self.compare_vid:
+                zoom_btn.setText("zoom 1")
+            else:
+                zoom_btn.setText("zoom")
+            self.zooming = False
+            self.select_zooming = False
+            self.zoom_point = QPoint()
+
+        zoom_btn.clicked.connect(self.zoom_image)
 
         self.load_current_frame()
         self.update()
@@ -622,6 +692,7 @@ class AnalyzeVidWindow(QMainWindow):
 
     def compare_video(self):
         if not self.compare_vid:
+            self.unzoom(self.button_zoom)
             self.compare_vid = True
             self.load_current_frame()
             self.resize(self.pixmap.width() + self.pixmap_to_compare.width() + 170,
@@ -629,8 +700,15 @@ class AnalyzeVidWindow(QMainWindow):
             if self.geometry().height() < 560:
                 self.resize(self.pixmap.width() + self.pixmap_to_compare.width() + 170,
                             560)
+
+            self.button_zoom.setGeometry(10, 150, 75, 40)
+            self.button_zoom.setText("zoom 1")
+            self.button_zoom2.show()
         else:
             self.compare_vid = False
+            self.button_zoom2.hide()
+            self.button_zoom.setGeometry(10, 150, 150, 40)
+            self.button_zoom.setText("zoom")
             self.adapt_size()
 
 

@@ -21,7 +21,6 @@ btn_style = "QPushButton {" \
             "    border-color: black;" \
             "   font: 10pt JetBrains Mono;" \
             "    color: " + WHITE + ";" \
-            "    min-width: 150px;" \
             "    padding: 0px;" \
             "}" \
             "QPushButton:hover {" \
