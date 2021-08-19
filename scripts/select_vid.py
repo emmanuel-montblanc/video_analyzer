@@ -1,3 +1,9 @@
+"""
+Main script of the project, allows you to select the video you want to analyze (either from your
+local disk or from instagram), and then to download and extracts the frames from it, before opening
+another window to analyze it.
+"""
+
 import sys
 from pathlib import Path
 
@@ -13,6 +19,11 @@ from get_frames_from_vid import ExtractFramesThread
 
 
 class SelectVidWindow(QMainWindow):
+    """
+    Main window, to select the video you want to analyze and prepare it for the analysis (download
+    and extract the frames)3
+    """
+
     def __init__(self):
         super().__init__()
         self.resize(720, 480)
@@ -60,14 +71,13 @@ class SelectVidWindow(QMainWindow):
         # Download button
         self.download_btn = QPushButton(self.frame_select_insta)
         self.download_btn.setText("Ok")
-        self.download_btn.setGeometry(185,
-                                    round(self.frameGeometry().height()/2) + 45, 150, 40)
+        self.download_btn.setGeometry(185, round(self.frameGeometry().height()/2) + 45, 150, 40)
         self.download_btn.clicked.connect(self.download_vid)
         self.download_btn.setStyleSheet(style_sheets.btn_style)
 
         # Return button
         self.return_btn = QPushButton(self.frame_select_insta)
-        self.return_btn.setText("return")
+        self.return_btn.setText("Return")
         self.return_btn.setGeometry(385,
                                     round(self.frameGeometry().height()/2) + 45, 150, 40)
         self.return_btn.clicked.connect(self.return_home_page)
@@ -104,6 +114,12 @@ class SelectVidWindow(QMainWindow):
         self.show()
 
     def select_local_vid(self):
+        """
+        Method called when clicking on the "Analyze local vid" button,
+        open a dialog for you to select the local video you want to analyze,
+        then if you chose a video, extracts the frames from it and start the analysis window
+        """
+
         dialog_result = QFileDialog.getOpenFileName(self, 'Select video',
                                                     'c:\\', "Video files (*.mp4 *.vid *.raw)")
         video_path = Path(dialog_result[0])
@@ -113,14 +129,33 @@ class SelectVidWindow(QMainWindow):
             self.start_analyze()
 
     def select_insta_vid(self):
+        """
+        Method called when clicking on the "Analyze insta vid" button,
+        hide the main frame ("Analyze insta vid" and "Analyze local vid" buttons),
+        and show the select_insta frame (url entry, url label, "ok" button and "Return" button)
+        """
+
         self.frame_select_insta.show()
         self.frame_main_buttons.hide()
 
     def return_home_page(self):
+        """
+        Method called when clicking on the "Return" button,
+        show the main frame ("Analyze insta vid" and "Analyze local vid" buttons),
+        and hide the select_insta frame (url entry, url label, "ok" button and "return" button)
+        """
+
         self.frame_select_insta.hide()
         self.frame_main_buttons.show()
 
     def download_vid(self):
+        """
+        Method called when clicking on the "Ok" button,
+        if a url was entered, hide the select_insta frame, displays info_state and progress labels,
+        then start the downloading thread and connects the different signals to the corresponding
+        methods
+        """
+
         url = self.url_entry.text()
         if url:
             self.frame_select_insta.hide()
@@ -138,6 +173,11 @@ class SelectVidWindow(QMainWindow):
             self.downloading_thread.finished.connect(self._finished_downloading)
 
     def _url_error(self, err):
+        """
+        Method called if a error signal was emitted by the downloading thread,
+        creates a pop up displaying the error
+        """
+
         self.info_state_lbl.setText("")
         self.progress_lbl.hide()
         self.frame_select_insta.show()
@@ -155,10 +195,23 @@ class SelectVidWindow(QMainWindow):
         error_pop_up.show()
 
     def _finished_downloading(self, file_name):
+        """
+        Method called when a "finished" signal is emitted by the downloading thread,
+        get the path of the video based on the file_name received, and start extracting the frames
+        :param file_name: name of the video
+        """
+
         self.video_path = Path.cwd().parent / "insta_videos" / file_name
         self.start_analyze()
 
     def start_analyze(self):
+        """
+        Method called either after selecting a local path, or after finished downloading a
+        instagram video,
+        hide the main frame, displays info_state_lbl, progress_lbl and the progress_bar
+        Start the extracting frame thread and link its different signal to the corresponding methods
+        """
+
         self.info_state_lbl.setText("Extracting frames from the video,"
                                     "\nplease wait")
         self.frame_main_buttons.hide()
@@ -170,13 +223,25 @@ class SelectVidWindow(QMainWindow):
         self.extracting_thread.progression.connect(self.update_extraction_progress)
         self.extracting_thread.finished.connect(self.finished_getting_frames)
 
-    def finished_getting_frames(self):
-        self.analyze_window = AnalyzeVidWindow(self, self.video_path.stem)
-        self.hide()
-
     def update_extraction_progress(self, current, total):
+        """
+        Method called when the extracting thread emits a "progression" signal,
+        updates the progress_lbl and the progress bar
+        :param current: the number of frame we have extracted
+        :param total: the total nb of frame we have to extract
+        """
+
         self.progress_lbl.setText("Extracting frame " + str(current) + " / " + str(total))
         self.progress_bar.setValue(int(current*100/total))
+
+    def finished_getting_frames(self):
+        """
+        Method called when the extracting thread emits a "finished" signal,
+        start the analysis window and hide the select_vid window
+        """
+
+        self.analyze_window = AnalyzeVidWindow(self, self.video_path.stem)
+        self.hide()
 
 
 if __name__ == '__main__':
