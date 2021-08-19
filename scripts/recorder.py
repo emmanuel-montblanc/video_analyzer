@@ -1,3 +1,7 @@
+"""
+This module allows you to record your screen and the audio from your microphone
+"""
+
 import subprocess
 import threading
 import time
@@ -11,6 +15,12 @@ import pyautogui
 
 
 class Recorder:
+    """
+    This class creates an instance of AudioRecorder and of ScreenRecorder, to capture both audio
+    and video, and then merge the two together using ffmpeg.
+    :param: str video_name: the name of the video we're analysing (is used to name the output file)
+    """
+
     def __init__(self, video_name):
         self.video_name = video_name
 
@@ -20,15 +30,30 @@ class Recorder:
         self.screen_recorder = ScreenRecorder()
 
     def start_recording(self):
+        """
+        Start recording the audio and the video
+        :return: None
+        """
+
         self.audio_recorder.start_recording()
         self.screen_recorder.start_recording()
 
     def stop_recording(self):
+        """
+        Stop recording the audio and the video, then merge the two together
+        :return: None
+        """
+
         self.audio_recorder.stop_recording()
         self.screen_recorder.stop_recording()
         self.merge_audio_video()
 
     def merge_audio_video(self):
+        """
+        Merge the audio and the video in a mkv file by using ffmpeg
+        :return: None
+        """
+
         self.audio_recorder.recording_thread.join()
         self.screen_recorder.recording_thread.join()
 
@@ -39,6 +64,11 @@ class Recorder:
         subprocess.call(cmd, shell=True)
 
     def _get_output_path(self):
+        """
+        Find a unused name for the output file, and returns the path to it
+        :return: Path: the path to the output file
+        """
+
         record_folder = Path.cwd().parent / "records"
         output_name = self.video_name + ".mkv"
         i = 0
@@ -51,6 +81,10 @@ class Recorder:
 
 
 class AudioRecorder:
+    """
+    Audio recorder class, as the name indicates, it records audio and save it in the temp folder
+    """
+
     def __init__(self):
 
         self.open = True
@@ -58,7 +92,7 @@ class AudioRecorder:
         self.frames_per_buffer = 1024
         self.channels = 2
         self.format = pyaudio.paInt16
-        self.audio_filename = "./temp/audio.wav"
+        self.audio_filename = "../temp/audio.wav"
         self.audio = pyaudio.PyAudio()
         self.stream = self.audio.open(format=self.format,
                                       channels=self.channels,
@@ -70,6 +104,11 @@ class AudioRecorder:
         self.recording_thread = threading.Thread(target=self._record)
 
     def _record(self):
+        """
+        recording loop, continues until the attribute "recording" of the thread is set to False
+        :return: None
+        """
+
         curr_thread = threading.currentThread()
 
         self.stream.start_stream()
@@ -88,18 +127,33 @@ class AudioRecorder:
         waveFile.setframerate(self.rate)
         waveFile.writeframes(b''.join(self.audio_frames))
         waveFile.close()
-        print("ended")
+        print("audio ended")
 
     def start_recording(self):
+        """
+        Start recording the audio in a separated thread
+        :return: None
+        """
+
         self.__init__()
         self.recording_thread.start()
-        print("started")
+        print("audio started")
 
     def stop_recording(self):
+        """
+        Stop recording by changing the attribute "recording" of the thread
+        :return: None
+        """
+
         self.recording_thread.recording = False
 
 
 class ScreenRecorder:
+    """
+    Screen recorder class, it takes multiples screenshot and then assemble them into a vide,
+    and save it in the temp folder
+    """
+
     def __init__(self):
         self.screen_size = pyautogui.size()
         self.fps = 15
@@ -109,11 +163,21 @@ class ScreenRecorder:
         self.recording_thread = threading.Thread(target=self._record)
 
     def start_recording(self):
+        """
+        Start recording the video in a separated thread
+        :return: None
+        """
+
         self.__init__()
         self.recording_thread.start()
         print("started")
 
     def _record(self):
+        """
+        recording loop, continues until the attribute "recording" of the thread is set to False
+        :return: None
+        """
+
         last_time = time.time()
         curr_thread = threading.currentThread()
         while getattr(curr_thread, "recording", True):
@@ -128,6 +192,11 @@ class ScreenRecorder:
         print("ended")
 
     def stop_recording(self):
+        """
+        Stop recording by changing the attribute "recording" of the thread
+        :return: None
+        """
+
         self.recording_thread.recording = False
 
 
