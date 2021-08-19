@@ -15,7 +15,8 @@ from style_sheets import wndw_style, lbl_style, btn_style, btn_style_selected,\
     dsply_txt_style, WHITE, RED, GREEN
 
 
-# TODO: compare video
+# TODO: Select second vid?
+# TODO: fix zoom for 2 video use
 
 class AnalyzeVidWindow(QMainWindow):
     """
@@ -497,6 +498,10 @@ class AnalyzeVidWindow(QMainWindow):
         """
 
         self.current_frame += 1
+
+        if self.compare_vid:
+            self.current_frame_to_compare += 1
+
         self.check_current_frame()
         self.load_current_frame()
         self.update()
