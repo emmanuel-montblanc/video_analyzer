@@ -1,3 +1,7 @@
+"""
+This modules contains AnalyzeViWindow, the class defining the interface to analyze the videos
+"""
+
 import sys
 
 from PyQt5.QtCore import Qt, QPoint, QTimer, QRect
@@ -12,20 +16,24 @@ from style_sheets import wndw_style, lbl_style, btn_style, btn_style_selected,\
 
 
 # TODO: comparer deux video
+# TODO: add docstrings everywhere
 
 
 class AnalyzeVidWindow(QMainWindow):
+    """
+    Window made to analyze the videos
+    :param: QMainWindow parent_window: the window that created this one, so we can go back to it if
+    we want to change video
+    :param: str video_name: the name of the video we're analyzing
+    """
 
-    def __init__(self, master_window, video_name):
+    def __init__(self, parent_window, video_name):
         super().__init__()
 
-        self.master_window = master_window
+        self.parent_window = parent_window
         self.video_name = video_name
 
-        self.resize(1380, 770)
-        self.setWindowTitle(video_name)
-        self.setWindowIcon(QIcon("../resources/diamond_twist.png"))
-        self.setStyleSheet(wndw_style)
+        self.init_window()
 
         with open("../videos/" + self.video_name + "/info.txt") as file:
             self.nb_frames = int(file.readline().strip())
@@ -81,30 +89,36 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.init_widgets()
 
-        # Undo shortcut
+        # Shortcuts
         self.ctrlz = QShortcut(QKeySequence('Ctrl+Z'), self)
-        self.ctrlz.activated.connect(self.remove_last_line)
-
-        # Play pause shortcut
         self.space_bar = QShortcut(QKeySequence(Qt.Key_Space), self)
-        self.space_bar.activated.connect(self.play_pause_vid)
-
-        # Next frame shortcut
         self.right_key = QShortcut(QKeySequence(Qt.Key_Right), self)
-        self.right_key.activated.connect(self.next_frame)
-
-        # Previous frame shortcut
         self.left_key = QShortcut(QKeySequence(Qt.Key_Left), self)
-        self.left_key.activated.connect(self.previous_frame)
+        self.init_shortcuts()
 
-        # Timer for playing video
+        # Timer
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.timer_update)
         self.timer.start(round(1000/self.fps))
 
         self.show()
 
+    def init_window(self):
+        """
+        Configure the title, icon and style sheet of the window
+        """
+
+        self.setWindowTitle(self.video_name)
+        self.setWindowIcon(QIcon("../resources/diamond_twist.png"))
+        self.setStyleSheet(wndw_style)
+
     def adapt_size(self):
+        """
+        Adapt the size of the video and of the window,
+        if the video + the button would be larger than the screen, reduce its size,
+        if the video is too small compared to the buttons, increase its size
+        """
+
         screen_size = QApplication.primaryScreen().geometry()
         if self.pixmap.width() >= screen_size.width() - 200:
             self.pixmap = self.pixmap.scaledToWidth(screen_size.width() - 200)
@@ -115,6 +129,11 @@ class AnalyzeVidWindow(QMainWindow):
         self.resize(self.pixmap.width() + 170, self.pixmap.height() + 50)
 
     def init_widgets(self):
+        """
+        Initialize all the buttons,
+        configure their text, size, positioning, style sheets, and the method their connected with
+        """
+
         # Button help
         self.button_help.setText("help")
         self.button_help.setGeometry(10, 0, 150, 40)
@@ -179,7 +198,23 @@ class AnalyzeVidWindow(QMainWindow):
         self.button_play_pause.clicked.connect(self.play_pause_vid)
         self.button_play_pause.setStyleSheet(btn_style)
 
+    def init_shortcuts(self):
+        """
+        Connects the shortcuts to their respectives methods
+        """
+
+        self.ctrlz.activated.connect(self.remove_last_line)
+        self.space_bar.activated.connect(self.play_pause_vid)
+        self.right_key.activated.connect(self.next_frame)
+        self.left_key.activated.connect(self.previous_frame)
+
     def paintEvent(self, event):
+        """
+        Paint event, called whenever self.update() is called,
+        draw the current frame, the progress bar of the video, all the lines, and if we're selecting
+        where to zoom, draw the zooming rectangle zone
+        """
+
         painter = QPainter()
         painter.begin(self)
 
@@ -190,23 +225,14 @@ class AnalyzeVidWindow(QMainWindow):
 
         painter.end()
 
-    def draw_zooming_rect(self, painter):
-        if self.select_zooming and self.zoom_point != QPoint():
-            painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
-            painter.drawRect(self.zooming_rect)
-
-    def draw_lines(self, painter):
-        # Draw the finished lines
-        for line_group in self.lines:
-            painter.setPen(QPen(line_group[0][2], 3, Qt.SolidLine))
-            for line in line_group:
-                painter.drawLine(line[0], line[1])
-        # Draw the line we are currently drawing
-        painter.setPen(QPen(self.drawing_color, 3, Qt.SolidLine))
-        for line in self.current_line:
-            painter.drawLine(line[0], line[1])
-
     def draw_progress_bar(self, painter):
+        """
+        Display the progress of the video,
+        just draw a line under the frame displayed, and draw a cursor on this line corresponding to
+        the progress of the video
+        :param QPainter painter: the current painter object
+        """
+
         # Draw the progress bar
         painter.setPen(QPen(QColor(WHITE), 3, Qt.SolidLine))
         painter.drawLine(QPoint(0, self.frameGeometry().height() - 60),
@@ -218,18 +244,59 @@ class AnalyzeVidWindow(QMainWindow):
         painter.drawLine(QPoint(x_pos, self.frameGeometry().height()),
                          QPoint(x_pos, self.frameGeometry().height() - 80))
 
+    def draw_lines(self, painter):
+        """
+        draw all the line drawn, and the line we're currently drawing
+        :param QPainter painter: the current painter object
+        """
+
+        # Draw the finished lines
+        for line_group in self.lines:
+            painter.setPen(QPen(line_group[0][2], 3, Qt.SolidLine))
+            for line in line_group:
+                painter.drawLine(line[0], line[1])
+
+        # Draw the line we are currently drawing
+        painter.setPen(QPen(self.drawing_color, 3, Qt.SolidLine))
+        for line in self.current_line:
+            painter.drawLine(line[0], line[1])
+
+    def draw_zooming_rect(self, painter):
+        """
+        if we are currently selecting where to zoom, draw the rectangle on where we will zoom
+        :param QPainter painter: the current painter object
+        """
+
+        if self.select_zooming and self.zoom_point != QPoint():
+            painter.setPen(QPen(Qt.black, 3, Qt.SolidLine))
+            painter.drawRect(self.zooming_rect)
+
     def mouseMoveEvent(self, event):
+        """
+        Mouse movement event, called whenever we move our mouse
+        if we are currently drawing, append the current position of the mouse to the list of point
+        of the current line
+        if we are selecting where to zoom, updates the size the zoom rectangle
+        if we are playing using the right click of our mouse, updates the current frame to the frame
+        corresponding to where we clicked
+        updates the window after this
+        """
+
+        # Append pos to line if we are drawing
         if event.buttons() and Qt.LeftButton and self.drawing:
             if event.x() < self.pixmap.width() and event.y() < self.pixmap.height():
                 self.current_line.append((self.lastPoint, event.pos(), self.drawing_color))
                 self.lastPoint = event.pos()
 
+        # Update zooming rectangle if we are selecting the zoom
         if event.buttons() and Qt.LeftButton and self.select_zooming:
             self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
                                       event.x(), event.x()/self.vid_ratio)
 
+        # Update the current frame if we are playing the video using the right click
         if event.buttons() and Qt.RightButton and self.playing_using_mouse:
             self.update_current_frame(event)
+
         self.update()
 
     def mousePressEvent(self, event):
@@ -268,6 +335,13 @@ class AnalyzeVidWindow(QMainWindow):
             self.playing_using_mouse = False
 
     def update_current_frame(self, event):
+        """
+        Method called when playing the video by using the right click
+        Get the position of the mouse on the frame, find the frame number corresponding to this
+        position, check if the frame number is valid, and loads it.
+        :param: event: event passed as argument to the method to get the x position of the mouse
+        """
+
         relative_pos = event.pos().x() / self.pixmap.width()
         self.current_frame = int(relative_pos * self.nb_frames)
 
@@ -275,13 +349,24 @@ class AnalyzeVidWindow(QMainWindow):
         self.load_current_frame()
 
     def check_current_frame(self):
+        """
+        Checks if the current frame number is not greater than the total number of frames
+        and that the current frame is not a negative number
+        """
+
         if self.current_frame > self.nb_frames:
             self.current_frame = self.nb_frames
         if self.current_frame < 0:
             self.current_frame = 0
 
     def load_current_frame(self):
-        self.pixmap = QPixmap("../videos/" + self.video_name + "/frame" + str(self.current_frame) + ".jpg")
+        """
+        Load the image corresponding to the current frame,
+        if we are zooming, also zoom on the loaded image
+        """
+
+        self.pixmap = QPixmap("../videos/" + self.video_name +
+                              "/frame" + str(self.current_frame) + ".jpg")
         self.pixmap = self.pixmap.scaledToWidth(self.fixed_width)
 
         if self.zooming:
@@ -289,11 +374,21 @@ class AnalyzeVidWindow(QMainWindow):
             self.pixmap = copy.scaledToWidth(self.fixed_width)
 
     def remove_last_line(self):
+        """
+        Method called when clicking on 'undo' button or when pressing Ctrl + z
+        Remove the last line draw
+        """
+
         if self.lines:
             self.lines.pop()
             self.update()
 
     def select_color(self):
+        """
+        Method called when clicking on one of the color buttons
+        Get which button was clicked and set the current drawing color to the corresponding color
+        """
+
         sender = self.sender()
         if sender is self.button_green:
             self.drawing_color = QColor(GREEN)
@@ -305,6 +400,11 @@ class AnalyzeVidWindow(QMainWindow):
             self.button_red.setStyleSheet(btn_style_red_selected)
 
     def play_pause_vid(self):
+        """
+        Method called when either clicking on the play/pause button, or pressing the spacebar
+        if the video was playing, pause it, and if the video was in pause, plays it
+        """
+
         if self.play_using_button:
             self.button_play_pause.setText("play")
             self.play_using_button = False
@@ -313,21 +413,38 @@ class AnalyzeVidWindow(QMainWindow):
             self.play_using_button = True
 
     def next_frame(self):
+        """
+        Method called automatically by the timer when playing the video,
+        but can also be called by using the right arrow of the keyboard,
+        Simply increase the current frame number by one,
+        then checks if it is valid, load it and updates the window
+        """
+
         self.current_frame += 1
         self.check_current_frame()
         self.load_current_frame()
         self.update()
 
     def previous_frame(self):
+        """
+        Method called by pressing the left arrow of the keyboard,
+        does the same as the method next_frame, but instead of increasing the current frame number
+        by one, it decreases it by one
+        """
+
         self.current_frame -= 1
         self.check_current_frame()
         self.load_current_frame()
         self.update()
 
     def set_speed(self):
+        """
+        Method called when clicking on one of the speed buttons
+        Get which button was clicked and set the playing speed to the corresponding value
+        """
+
         sender = self.sender()
-        if sender is self.speed_x1:
-            speed = 1
+        speed = 1
         if sender is self.speed_x05:
             speed = 0.5
         if sender is self.speed_x025:
@@ -363,7 +480,7 @@ class AnalyzeVidWindow(QMainWindow):
             self.record_video()
 
         # return to the select video windows
-        self.master_window.show()
+        self.parent_window.show()
         self.close()
 
     def zoom_image(self):
