@@ -384,7 +384,6 @@ class AnalyzeVidWindow(QMainWindow):
                 self.zoom_point = event.pos()
             elif self.select_zooming2:
                 self.zoom_point2 = event.pos()
-                print(self.zoom_point2)
             else:
                 self.drawing = True
                 self.lastPoint = event.pos()
@@ -410,8 +409,9 @@ class AnalyzeVidWindow(QMainWindow):
 
         if event.button() == Qt.LeftButton:
             if self.select_zooming:
+                rect_width = event.x() - self.zoom_point.x()
                 self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
-                                          event.x(), round(event.x() / self.vid_ratio))
+                                          rect_width, round(rect_width / self.vid_ratio))
                 self.zoom_point = QPoint()
                 self.select_zooming = False
                 self.zooming = True
@@ -419,9 +419,9 @@ class AnalyzeVidWindow(QMainWindow):
                 self.update()
 
             elif self.select_zooming2:
+                rect_width = event.x() - self.zoom_point2.x()
                 self.zooming_rect2 = QRect(self.zoom_point2.x(), self.zoom_point2.y(),
-                                           event.x(), round(event.x() / self.vid_ratio))
-                print(self.zooming_rect2)
+                                           rect_width, round(rect_width / self.vid_ratio_to_compare))
                 self.zoom_point2 = QPoint()
                 self.select_zooming2 = False
                 self.zooming2 = True
@@ -489,8 +489,8 @@ class AnalyzeVidWindow(QMainWindow):
             self.pixmap_to_compare = self.pixmap_to_compare.scaledToHeight(self.pixmap.height())
 
             if self.zooming:
-                copy = self.pixmap.copy(QRect(self.zooming_rect.x(), self.zooming_rect.y(),
-                                              self.zooming_rect.width(), self.zooming_rect.height()))
+                copy = self.pixmap.copy(self.zooming_rect)
+                self.pixmap = copy
                 self.pixmap = copy.scaledToWidth(round(self.fixed_width/2))
 
             if self.zooming2:
