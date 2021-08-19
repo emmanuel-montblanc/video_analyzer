@@ -237,9 +237,15 @@ class SelectVidWindow(QMainWindow):
     def finished_getting_frames(self):
         """
         Method called when the extracting thread emits a "finished" signal,
-        start the analysis window and hide the select_vid window
+        hide the progress widgets, and show the main button frames (in case we want to go back to
+        this window later to change video)
+        Then start the analysis window and hide the select_vid window
         """
 
+        self.info_state_lbl.setText("")
+        self.progress_lbl.hide()
+        self.progress_bar.hide()
+        self.frame_main_buttons.show()
         self.analyze_window = AnalyzeVidWindow(self, self.video_path.stem)
         self.hide()
 
