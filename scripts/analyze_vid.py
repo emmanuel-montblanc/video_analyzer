@@ -300,6 +300,14 @@ class AnalyzeVidWindow(QMainWindow):
         self.update()
 
     def mousePressEvent(self, event):
+        """
+        Mouse pressed event, called whenever we do press a button on our mouse,
+        if we are not selecting where to zoom, if we do a left click we start drawing, and if we do
+        a right we can play the video using our mouse
+        if we are selecting where to zoom, a left click set up the origin of our zooming rectangle,
+        and a right click cancel the zoom
+        """
+
         if event.button() == Qt.LeftButton:
             if self.select_zooming:
                 if self.zoom_point == QPoint():
@@ -316,6 +324,15 @@ class AnalyzeVidWindow(QMainWindow):
                 self.playing_using_mouse = True
 
     def mouseReleaseEvent(self, event):
+        """
+        Mouse release event, called whenever we release the click on our mouse
+        if we were drawing, releasing the left click will finish the current line and stop drawing
+        if we were playing the video with our mouse, releasing the right click will stop playing
+        the video with our mouse
+        and if we were selecting where to zoom, releasing the left click will validate the current
+        zooming rectangle and zoom on the image
+        """
+
         if event.button() == Qt.LeftButton:
             if self.select_zooming:
                 self.zooming_rect = QRect(self.zoom_point.x(), self.zoom_point.y(),
@@ -456,6 +473,13 @@ class AnalyzeVidWindow(QMainWindow):
         self.timer.start(refresh_rate)
 
     def highlight_selected_speed(self, selected_btn):
+        """
+        Method after a speed button was clicked,
+        Set the style sheet of every speed button to the default one,
+        then set the style sheet of the selected button to the highlighted one
+        :param QPushButton selected_btn: the selected speed button
+        """
+
         self.speed_x1.setStyleSheet(btn_style)
         self.speed_x05.setStyleSheet(btn_style)
         self.speed_x025.setStyleSheet(btn_style)
@@ -463,10 +487,19 @@ class AnalyzeVidWindow(QMainWindow):
         selected_btn.setStyleSheet(btn_style_selected)
 
     def timer_update(self):
+        """
+        Timer method, is called periodically based on the playing speed
+        If we are currently playing the video, call the method next_frame()
+        """
         if self.play_using_button:
             self.next_frame()
 
     def record_video(self):
+        """
+        Method called when clicking on the start/stop recording button,
+        simply start recording if we weren't, and if we were recording then stop recording
+        """
+
         if self.button_record.text() == "start recording":
             self.recorder.start_recording()
             self.button_record.setText("stop recording")
@@ -474,22 +507,22 @@ class AnalyzeVidWindow(QMainWindow):
             self.recorder.stop_recording()
             self.button_record.setText("start recording")
 
-    def change_video(self):
-        # Stop the recording before leaving
-        if self.button_record.text() == "stop recording":
-            self.record_video()
-
-        # return to the select video windows
-        self.parent_window.show()
-        self.close()
-
     def zoom_image(self):
-        if not self.zooming:
-            self.select_zooming = True
-            self.button_zoom.setText("Unzoom")
-            self.button_zoom.clicked.connect(self.unzoom)
+        """
+        Method called when clicking on the zoom button,
+        start zooming if you left click where you want to zoom on the video
+        """
+
+        self.select_zooming = True
+        self.button_zoom.setText("Unzoom")
+        self.button_zoom.clicked.connect(self.unzoom)
 
     def unzoom(self):
+        """
+        Method called when clicking on the unzoom button,
+        simply stop zooming, reset the zooming rectangle, reload the frame and updates the window
+        """
+
         self.button_zoom.setText("zoom")
         self.zooming = False
         self.select_zooming = False
@@ -501,11 +534,35 @@ class AnalyzeVidWindow(QMainWindow):
         self.update()
 
     def help(self):
+        """
+        Method called when clicking on the help button,
+        open the help window, displaying a help on how to use the interface
+        """
+
         self.help_wdw = HelpWindow()
         self.help_wdw.show()
 
+    def change_video(self):
+        """
+        Method called when clicking on the "Change video" button,
+        return to the select_vid window, and close this one
+        """
+
+        # Stop the recording before leaving
+        if self.button_record.text() == "stop recording":
+            self.record_video()
+
+        # return to the select video windows
+        self.parent_window.show()
+        self.close()
+
 
 class HelpWindow(QMainWindow):
+    """
+    Class defining the help window,
+    it simply load the text from /resources/help.txt and displays it
+    """
+
     def __init__(self):
         super().__init__()
         screen_size = QApplication.primaryScreen().geometry()
