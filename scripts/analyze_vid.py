@@ -146,8 +146,8 @@ class AnalyzeVidWindow(QMainWindow):
         self.vid_ratio_to_compare = (
             self.pixmap_to_compare.width() / self.pixmap_to_compare.height()
         )
-        self.fixed_width_vid1 = self.fixed_width
-        self.fixed_height_vid2 = self.pixmap.height()
+        self.fixed_width_vid1 = 0
+        self.fixed_height_vid2 = 0
         self.vid2_y_pos = 0
 
         # ------------------------------------------------
@@ -596,6 +596,9 @@ class AnalyzeVidWindow(QMainWindow):
                 + str(self.current_frame_to_compare)
                 + ".jpg"
             )
+
+            print(self.pixmap_to_compare.width())
+
             self.pixmap_to_compare = self.pixmap_to_compare.scaledToHeight(self.fixed_height_vid2)
             while self.pixmap_to_compare.width() + self.pixmap.width() + 170 \
                     >= self.screen_size.width():
@@ -603,6 +606,8 @@ class AnalyzeVidWindow(QMainWindow):
                 self.pixmap_to_compare = self.pixmap_to_compare.scaledToHeight(
                     self.fixed_height_vid2)
                 self.vid2_y_pos = round((self.pixmap.height() - self.fixed_height_vid2) / 2)
+
+            print(self.pixmap_to_compare.width())
 
             if self.zooming:
                 copy = self.pixmap.copy(self.zooming_rect)
@@ -812,31 +817,46 @@ class AnalyzeVidWindow(QMainWindow):
 
     def compare_video(self):
         if not self.compare_vid:
-            self.unzoom(self.button_zoom)
-            self.compare_vid = True
-            if self.pixmap.width() * 2 + 170 >= self.screen_size.width():
-                self.fixed_width_vid1 = round(self.fixed_width / 2)
+            self.hide()
+            self.select_wnd = SelectVidWindow()
+            self.select_wnd.loaded.connect(self.start_compare_video)
 
-            self.load_current_frame()
-            self.resize(
-                self.pixmap.width() + self.pixmap_to_compare.width() + 170,
-                self.pixmap.height() + 50,
-            )
-            if self.geometry().height() < 560:
-                self.resize(self.pixmap.width() + self.pixmap_to_compare.width() + 170, 560)
-
-            self.frame.setGeometry(self.pixmap.width() + self.pixmap_to_compare.width(), 10,
-                                   170, self.frameGeometry().height())
-
-            self.button_zoom.setGeometry(10, 150, 75, 40)
-            self.button_zoom.setText("zoom 1")
-            self.button_zoom2.show()
         else:
             self.compare_vid = False
             self.button_zoom2.hide()
             self.button_zoom.setGeometry(10, 150, 150, 40)
             self.button_zoom.setText("zoom")
             self.adapt_size()
+
+    def start_compare_video(self, vid_name):
+        self.video_to_compare = vid_name
+
+        self.fixed_width_vid1 = self.fixed_width
+        self.fixed_height_vid2 = self.pixmap.height()
+
+        self.unzoom(self.button_zoom)
+        self.compare_vid = True
+        if self.pixmap.width() * 2 + 170 >= self.screen_size.width():
+            self.fixed_width_vid1 = round(self.fixed_width / 2)
+
+        self.load_current_frame()
+        self.resize(
+            self.pixmap.width() + self.pixmap_to_compare.width() + 170,
+            self.pixmap.height() + 50,
+        )
+        if self.geometry().height() < 560:
+            self.resize(self.pixmap.width() + self.pixmap_to_compare.width() + 170, 560)
+
+        self.frame.setGeometry(self.pixmap.width() + self.pixmap_to_compare.width(), 10,
+                               170, self.frameGeometry().height())
+
+        print(self.video_to_compare)
+        print(self.pixmap_to_compare.width())
+
+        self.button_zoom.setGeometry(10, 150, 75, 40)
+        self.button_zoom.setText("zoom 1")
+        self.button_zoom2.show()
+        self.show()
 
 
 class HelpWindow(QMainWindow):
