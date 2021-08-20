@@ -597,12 +597,12 @@ class AnalyzeVidWindow(QMainWindow):
                 copy = self.pixmap_to_compare.copy(
                     QRect(
                         self.zooming_rect2.x() - self.pixmap.width(),
-                        self.zooming_rect2.y(),
+                        self.zooming_rect2.y() - self.vid2_y_pos,
                         self.zooming_rect2.width(),
                         self.zooming_rect2.height(),
                     )
                 )
-                self.pixmap_to_compare = copy.scaledToHeight(self.pixmap.height())
+                self.pixmap_to_compare = copy.scaledToHeight(self.fixed_height_vid2)
 
         elif self.zooming:
             copy = self.pixmap.copy(self.zooming_rect)
