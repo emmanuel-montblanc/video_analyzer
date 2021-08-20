@@ -7,10 +7,10 @@ another window to analyze it.
 import sys
 from pathlib import Path
 
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtGui import QIcon, QFontDatabase
 from PyQt5.QtWidgets import (
-    QMainWindow,
+    QWidget,
     QApplication,
     QPushButton,
     QFileDialog,
@@ -22,16 +22,16 @@ from PyQt5.QtWidgets import (
 )
 
 import style_sheets
-from analyze_vid import AnalyzeVidWindow
 from download_vid import DownloadInstaVideoThread
 from get_frames_from_vid import ExtractFramesThread
 
 
-class SelectVidWindow(QMainWindow):
+class SelectVidWindow(QWidget):
     """
     Main window, to select the video you want to analyze and prepare it for the analysis (download
     and extract the frames)3
     """
+    loaded = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -40,7 +40,7 @@ class SelectVidWindow(QMainWindow):
         self.setWindowIcon(QIcon("../resources/diamond_twist.png"))
         self.setStyleSheet(style_sheets.wndw_style)
 
-        self.analyze_window = QMainWindow()
+        # self.analyze_window = QMainWindow()
         self.extracting_thread = QThread()
         self.downloading_thread = QThread()
 
@@ -281,12 +281,8 @@ class SelectVidWindow(QMainWindow):
         Then start the analysis window and hide the select_vid window
         """
 
-        self.info_state_lbl.setText("")
-        self.progress_lbl.hide()
-        self.progress_bar.hide()
-        self.frame_main_buttons.show()
-        self.analyze_window = AnalyzeVidWindow(self, self.video_path.stem)
-        self.hide()
+        self.loaded.emit(self.video_path.stem)
+        self.close()
 
 
 if __name__ == "__main__":

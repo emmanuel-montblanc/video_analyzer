@@ -39,6 +39,7 @@ from style_sheets import (
     RED,
     GREEN,
 )
+from select_vid import SelectVidWindow
 
 
 # TODO: Select second vid?
@@ -51,25 +52,21 @@ class AnalyzeVidWindow(QMainWindow):
     :param: str video_name: the name of the video we're analyzing
     """
 
-    def __init__(self, parent_window, video_name):
+    def __init__(self):
         super().__init__()
+        self.video_name = ""
 
-        self.parent_window = parent_window
-        self.video_name = video_name
+        self.select_wnd = SelectVidWindow()
+        self.select_wnd.loaded.connect(self.get_vid_and_init)
 
-        self.init_window()
-
-        with open("../videos/" + self.video_name + "/info.txt") as file:
-            self.nb_frames = int(file.readline().strip())
-            self.fps = int(file.readline().strip())
-
+        self.fps = 1
+        self.nb_frames = 1
         self.current_frame = 0
         self.pixmap = QPixmap()
-        self.screen_size = QApplication.primaryScreen().geometry()
-        self.adapt_size()
+        self.fixed_width = 1
+        self.vid_ratio = 1
 
-        self.fixed_width = self.pixmap.width()
-        self.vid_ratio = self.pixmap.width() / self.pixmap.height()
+        self.screen_size = QApplication.primaryScreen().geometry()
 
         self.help_wdw = QMainWindow()
         self.recorder = Recorder(self.video_name)
@@ -89,8 +86,6 @@ class AnalyzeVidWindow(QMainWindow):
         self.drawing_color = QColor(RED)
 
         self.frame = QFrame(self)
-        self.frame.setGeometry(self.fixed_width, 10,
-                               170, self.frameGeometry().height())
 
         # Help / change vid / record / zoom widgets
         self.button_help = QPushButton(self.frame)
@@ -112,19 +107,14 @@ class AnalyzeVidWindow(QMainWindow):
         self.speed_x0125 = QPushButton(self.frame)
         self.button_play_pause = QPushButton(self.frame)
 
-        self.init_widgets()
-
         # Shortcuts
         self.ctrlz = QShortcut(QKeySequence("Ctrl+Z"), self)
         self.space_bar = QShortcut(QKeySequence(Qt.Key_Space), self)
         self.right_key = QShortcut(QKeySequence(Qt.Key_Right), self)
         self.left_key = QShortcut(QKeySequence(Qt.Key_Left), self)
-        self.init_shortcuts()
 
         # Timer
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.timer_update)
-        self.timer.start(round(1000 / self.fps))
 
         # -----------------------------------------------
         # Compare
@@ -162,6 +152,17 @@ class AnalyzeVidWindow(QMainWindow):
 
         # ------------------------------------------------
 
+    def get_vid_and_init(self, vid_name):
+        self.video_name = vid_name
+        self.init_global()
+
+    def init_global(self):
+        self.init_window()
+        self.init_video_properties()
+        self.adapt_size()
+        self.init_buttons()
+        self.init_shortcuts()
+        self.init_timer()
         self.show()
 
     def init_window(self):
@@ -172,6 +173,11 @@ class AnalyzeVidWindow(QMainWindow):
         self.setWindowTitle(self.video_name)
         self.setWindowIcon(QIcon("../resources/diamond_twist.png"))
         self.setStyleSheet(wndw_style)
+
+    def init_video_properties(self):
+        with open("../videos/" + self.video_name + "/info.txt") as file:
+            self.nb_frames = int(file.readline().strip())
+            self.fps = int(file.readline().strip())
 
     def adapt_size(self):
         """
@@ -190,7 +196,13 @@ class AnalyzeVidWindow(QMainWindow):
             self.pixmap = self.pixmap.scaledToHeight(530)
         self.resize(self.pixmap.width() + 170, self.pixmap.height() + 50)
 
-    def init_widgets(self):
+        self.fixed_width = self.pixmap.width()
+        self.vid_ratio = self.pixmap.width() / self.pixmap.height()
+
+        self.frame.setGeometry(self.fixed_width, 10,
+                               170, self.frameGeometry().height())
+
+    def init_buttons(self):
         """
         Initialize all the buttons,
         configure their text, size, positioning, style sheets, and the method their connected with
@@ -269,6 +281,10 @@ class AnalyzeVidWindow(QMainWindow):
         self.space_bar.activated.connect(self.play_pause_vid)
         self.right_key.activated.connect(self.next_frame)
         self.left_key.activated.connect(self.previous_frame)
+
+    def init_timer(self):
+        self.timer.timeout.connect(self.timer_update)
+        self.timer.start(round(1000 / self.fps))
 
     def paintEvent(self, event):
         """
@@ -422,7 +438,7 @@ class AnalyzeVidWindow(QMainWindow):
                 )
             if (event.y() >= self.pixmap_to_compare.height() + self.vid2_y_pos) or (rect_width / self.vid_ratio_to_compare + self.zoom_point2.y() > self.pixmap_to_compare.height() + self.vid2_y_pos):
                 rect_width = round((self.pixmap_to_compare.height() + self.vid2_y_pos
-                              - self.zoom_point2.y())\
+                              - self.zoom_point2.y())
                              * self.vid_ratio_to_compare)
 
             self.zooming_rect2 = QRect(
@@ -791,9 +807,8 @@ class AnalyzeVidWindow(QMainWindow):
         if self.button_record.text() == "stop recording":
             self.record_video()
 
-        # return to the select video windows
-        self.parent_window.show()
-        self.close()
+        self.hide()
+        self.__init__()
 
     def compare_video(self):
         if not self.compare_vid:
@@ -851,5 +866,5 @@ if __name__ == "__main__":
     QFontDatabase.addApplicationFont("../resources/JetBrainsMono-Regular.ttf")
     # print(QFontDatabase().families())
     # main_window = AnalyzeVidWindow("", "VID_20210228_143048_01")
-    main_window = AnalyzeVidWindow("", "21-02-28-16-16-22")
+    main_window = AnalyzeVidWindow()
     sys.exit(app.exec_())
