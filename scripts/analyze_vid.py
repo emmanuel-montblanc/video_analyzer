@@ -393,9 +393,7 @@ class AnalyzeVidWindow(QMainWindow):
         # Append pos to line if we are drawing
         if event.buttons() and Qt.LeftButton and self.drawing:
             if event.x() < self.pixmap.width() and event.y() < self.pixmap.height():
-                self.current_line.append(
-                    (self.lastPoint, event.pos(), self.drawing_color)
-                )
+                self.current_line.append((self.lastPoint, event.pos(), self.drawing_color))
                 self.lastPoint = event.pos()
 
         # Update zooming rectangle if we are selecting the zoom
@@ -422,6 +420,11 @@ class AnalyzeVidWindow(QMainWindow):
                     + self.pixmap_to_compare.width()
                     - self.zoom_point2.x()
                 )
+            if (event.y() >= self.pixmap_to_compare.height() + self.vid2_y_pos) or (rect_width / self.vid_ratio_to_compare + self.zoom_point2.y() > self.pixmap_to_compare.height() + self.vid2_y_pos):
+                rect_width = round((self.pixmap_to_compare.height() + self.vid2_y_pos
+                              - self.zoom_point2.y())\
+                             * self.vid_ratio_to_compare)
+
             self.zooming_rect2 = QRect(
                 self.zoom_point2.x(),
                 self.zoom_point2.y(),
@@ -447,8 +450,17 @@ class AnalyzeVidWindow(QMainWindow):
         if event.button() == Qt.LeftButton:
             if self.select_zooming:
                 self.zoom_point = event.pos()
-            elif self.select_zooming2:
-                self.zoom_point2 = event.pos()
+                if self.zoom_point.x() > self.pixmap.width() - 20:
+                    self.zoom_point = QPoint(self.pixmap.width() - 25, self.zoom_point.y())
+            elif self.select_zooming2 and self.compare_vid:
+                x_point2, y_point2 = event.pos().x(), event.pos().y()
+                if x_point2 < self.pixmap.width():
+                    x_point2 = self.pixmap.width()
+                if y_point2 < self.vid2_y_pos:
+                    y_point2 = self.vid2_y_pos
+                if y_point2 > self.fixed_height_vid2 + self.vid2_y_pos - 20:
+                    y_point2 = self.fixed_height_vid2 + self.vid2_y_pos - 20
+                self.zoom_point2 = QPoint(x_point2, y_point2)
             else:
                 self.drawing = True
                 self.lastPoint = event.pos()
@@ -824,9 +836,9 @@ class HelpWindow(QMainWindow):
         self.setWindowTitle("Help")
 
         self.displayer = QTextEdit(self)
-        self.displayer.setGeometry(
-            0, 0, screen_size.width() * 0.8, screen_size.height() * 0.8
-        )
+        self.displayer.setGeometry(0, 0,
+                                   round(screen_size.width() * 0.8),
+                                   round(screen_size.height() * 0.8))
         self.displayer.setStyleSheet(dsply_txt_style)
 
         text = open("../resources/help.txt").read()
