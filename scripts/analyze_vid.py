@@ -43,7 +43,6 @@ from style_sheets import (
 
 # TODO: Select second vid?
 
-
 class AnalyzeVidWindow(QMainWindow):
     """
     Window made to analyze the videos
@@ -66,6 +65,7 @@ class AnalyzeVidWindow(QMainWindow):
 
         self.current_frame = 0
         self.pixmap = QPixmap()
+        self.screen_size = QApplication.primaryScreen().geometry()
         self.adapt_size()
 
         self.fixed_width = self.pixmap.width()
@@ -89,12 +89,8 @@ class AnalyzeVidWindow(QMainWindow):
         self.drawing_color = QColor(RED)
 
         self.frame = QFrame(self)
-        self.frame.setGeometry(
-            self.fixed_width,
-            20,
-            self.frameGeometry().width(),
-            self.frameGeometry().height(),
-        )
+        self.frame.setGeometry(self.fixed_width, 10,
+                               170, self.frameGeometry().height())
 
         # Help / change vid / record / zoom widgets
         self.button_help = QPushButton(self.frame)
@@ -160,6 +156,9 @@ class AnalyzeVidWindow(QMainWindow):
         self.vid_ratio_to_compare = (
             self.pixmap_to_compare.width() / self.pixmap_to_compare.height()
         )
+        self.fixed_width_vid1 = self.fixed_width
+        self.fixed_height_vid2 = self.pixmap.height()
+        self.vid2_y_pos = 0
 
         # ------------------------------------------------
 
@@ -181,13 +180,12 @@ class AnalyzeVidWindow(QMainWindow):
         if the video is too small compared to the buttons, increase its size
         """
 
-        screen_size = QApplication.primaryScreen().geometry()
         self.pixmap = QPixmap("../videos/" + self.video_name + "/frame0.jpg")
 
-        if self.pixmap.width() >= screen_size.width() - 200:
-            self.pixmap = self.pixmap.scaledToWidth(screen_size.width() - 200)
-        if self.pixmap.height() >= screen_size.height() - 120:
-            self.pixmap = self.pixmap.scaledToHeight(screen_size.height() - 120)
+        if self.pixmap.width() >= self.screen_size.width() - 200:
+            self.pixmap = self.pixmap.scaledToWidth(self.screen_size.width() - 200)
+        if self.pixmap.height() >= self.screen_size.height() - 120:
+            self.pixmap = self.pixmap.scaledToHeight(self.screen_size.height() - 120)
         if self.pixmap.height() < 530:
             self.pixmap = self.pixmap.scaledToHeight(530)
         self.resize(self.pixmap.width() + 170, self.pixmap.height() + 50)
@@ -285,14 +283,10 @@ class AnalyzeVidWindow(QMainWindow):
         painter.drawPixmap(self.pixmap.rect(), self.pixmap)
         if self.compare_vid:
             painter.drawPixmap(
-                QRect(
-                    self.pixmap.width(),
-                    0,
-                    self.pixmap_to_compare.width(),
-                    self.pixmap_to_compare.height(),
-                ),
-                self.pixmap_to_compare,
-            )
+                QRect(self.pixmap.width(), self.vid2_y_pos,
+                      self.pixmap_to_compare.width(),
+                      self.pixmap_to_compare.height()),
+                self.pixmap_to_compare)
         self.draw_progress_bar(painter)
         self.draw_lines(painter)
         self.draw_zooming_rect(painter)
@@ -561,13 +555,12 @@ class AnalyzeVidWindow(QMainWindow):
         if we are zooming, also zoom on the loaded image
         """
 
-        self.pixmap = QPixmap(
-            "../videos/" + self.video_name + "/frame" + str(self.current_frame) + ".jpg"
-        )
+        self.pixmap = QPixmap("../videos/" + self.video_name +
+                              "/frame" + str(self.current_frame) + ".jpg")
         self.pixmap = self.pixmap.scaledToWidth(self.fixed_width)
 
         if self.compare_vid:
-            self.pixmap = self.pixmap.scaledToWidth(round(self.fixed_width / 2))
+            self.pixmap = self.pixmap.scaledToWidth(self.fixed_width_vid1)
             self.pixmap_to_compare = QPixmap(
                 "../videos/"
                 + self.video_to_compare
@@ -575,14 +568,18 @@ class AnalyzeVidWindow(QMainWindow):
                 + str(self.current_frame_to_compare)
                 + ".jpg"
             )
-            self.pixmap_to_compare = self.pixmap_to_compare.scaledToHeight(
-                self.pixmap.height()
-            )
+            self.pixmap_to_compare = self.pixmap_to_compare.scaledToHeight(self.fixed_height_vid2)
+            while self.pixmap_to_compare.width() + self.pixmap.width() + 170 \
+                    >= self.screen_size.width():
+                self.fixed_height_vid2 = round(self.fixed_height_vid2 / 2)
+                self.pixmap_to_compare = self.pixmap_to_compare.scaledToHeight(
+                    self.fixed_height_vid2)
+                self.vid2_y_pos = round((self.pixmap.height() - self.fixed_height_vid2) / 2)
 
             if self.zooming:
                 copy = self.pixmap.copy(self.zooming_rect)
                 self.pixmap = copy
-                self.pixmap = copy.scaledToWidth(round(self.fixed_width / 2))
+                self.pixmap = copy.scaledToWidth(self.fixed_width_vid1)
 
             if self.zooming2:
                 copy = self.pixmap_to_compare.copy(
@@ -769,7 +766,7 @@ class AnalyzeVidWindow(QMainWindow):
         open the help window, displaying a help on how to use the interface
         """
 
-        self.help_wdw = HelpWindow()
+        self.help_wdw = HelpWindow(self.screen_size)
         self.help_wdw.show()
 
     def change_video(self):
@@ -790,15 +787,19 @@ class AnalyzeVidWindow(QMainWindow):
         if not self.compare_vid:
             self.unzoom(self.button_zoom)
             self.compare_vid = True
+            if self.pixmap.width() * 2 + 170 >= self.screen_size.width():
+                self.fixed_width_vid1 = round(self.fixed_width / 2)
+
             self.load_current_frame()
             self.resize(
                 self.pixmap.width() + self.pixmap_to_compare.width() + 170,
                 self.pixmap.height() + 50,
             )
             if self.geometry().height() < 560:
-                self.resize(
-                    self.pixmap.width() + self.pixmap_to_compare.width() + 170, 560
-                )
+                self.resize(self.pixmap.width() + self.pixmap_to_compare.width() + 170, 560)
+
+            self.frame.setGeometry(self.pixmap.width() + self.pixmap_to_compare.width(), 10,
+                                   170, self.frameGeometry().height())
 
             self.button_zoom.setGeometry(10, 150, 75, 40)
             self.button_zoom.setText("zoom 1")
@@ -817,9 +818,8 @@ class HelpWindow(QMainWindow):
     it simply load the text from /resources/help.txt and displays it
     """
 
-    def __init__(self):
+    def __init__(self, screen_size):
         super().__init__()
-        screen_size = QApplication.primaryScreen().geometry()
         self.resize(round(screen_size.width() * 0.8), round(screen_size.height() * 0.8))
         self.setWindowTitle("Help")
 
@@ -838,5 +838,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     QFontDatabase.addApplicationFont("../resources/JetBrainsMono-Regular.ttf")
     # print(QFontDatabase().families())
-    main_window = AnalyzeVidWindow("", "VID_20210228_143048_01")
+    # main_window = AnalyzeVidWindow("", "VID_20210228_143048_01")
+    main_window = AnalyzeVidWindow("", "21-02-28-16-16-22")
     sys.exit(app.exec_())
